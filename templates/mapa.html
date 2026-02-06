@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="card shadow p-4">
+    <h2 class="text-primary">Mapa de suministro de agua</h2>
+
+    <p>
+        En el siguiente mapa se muestran los <strong>puntos alternativos de abastecimiento</strong> como tinacos y llaves públicas.
+    </p>
+
+    
+
+    <iframe
+        src="{{ url_for('static', filename='mapa_interactivo.html') }}"
+        width="100%"
+        height="500"
+        style="border:none; border-radius:10px;">
+    </iframe>
+</div>
+{% endblock %}

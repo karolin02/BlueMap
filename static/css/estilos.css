@@ -1,0 +1,57 @@
+/* ===== ESTILOS GENERALES ===== */
+body {
+    background-color: #f4f9ff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.container {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== TITULOS ===== */
+h2 {
+    color: #0d6efd;
+    margin-bottom: 15px;
+}
+
+/* ===== TEXTO ===== */
+p {
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+/* ===== BOTONES ===== */
+.btn-primary {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 6px;
+}
+
+/* ===== MAPA ===== */
+iframe {
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    margin-top: 15px;
+}
+
+/* ===== FOOTER (opcional) ===== */
+.footer {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 0.9rem;
+    color: #666;
+}

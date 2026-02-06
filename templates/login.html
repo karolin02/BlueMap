@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<h2 class="mb-3">Iniciar sesión</h2>
+
+<form method="post">
+    <input class="form-control mb-2" name="email" type="email" placeholder="Correo" required>
+    <input class="form-control mb-2" name="password" type="password" placeholder="Contraseña" required>
+
+    <button class="btn btn-success w-100 mb-2">Entrar</button>
+</form>
+
+<!-- BOTONES DE NAVEGACIÓN -->
+<div class="d-flex justify-content-between mt-3">
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+        ⬅ 
+    </a>
+
+    <a href="{{ url_for('register') }}" class="btn btn-outline-primary">
+        Registrarse
+    </a>
+</div>
+{% endblock %}

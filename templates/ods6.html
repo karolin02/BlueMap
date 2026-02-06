@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="card shadow p-4">
+
+    <h2 class="text-primary mb-3">ODS 6: Agua limpia y saneamiento</h2>
+
+   
+
+    <!-- IMAGEN GRANDE Y VISIBLE -->
+    <div class="text-center mb-4">
+        <img 
+            src="{{ url_for('static', filename='img/ODS06.jpg') }}" 
+            alt="ODS 6 Agua limpia y saneamiento"
+            class="img-fluid rounded"
+            style="max-width: 1300px; width: 100%;"
+        >
+    </div>
+
+    <p>El ODS 6 ("Agua limpia y saneamiento") es el sexto de los 17 Objetivos de Desarrollo Sostenible de la ONU, 
+        cuyo fin para 2030 es garantizar la disponibilidad, gestión sostenible y el acceso universal a agua potable 
+        segura y a saneamiento adecuado para todos, mejorando la calidad del agua y protegiendo ecosistemas. </p>
+
+
+    <p><strong>Puntos clave del ODS 6</strong></p>
+
+    <ul>
+        <li><strong>Acceso Universal:</strong> Lograr acceso equitativo al agua potable y a servicios de saneamiento e higiene (baños) 
+            para toda la población, poniendo fin a la defecación al aire libre.</li>
+        <li><strong>Gestión Sostenible:</strong> Mejorar la calidad del agua reduciendo la contaminación, eliminando el vertido de residuos
+             y aumentando el reciclado y la reutilización segura.</li>
+        <li><strong>Protección de Ecosistemas:</strong> Proteger y restablecer ecosistemas relacionados con el agua, incluidos bosques, montañas
+             humedales y ríos.</li>
+        <li><strong>Eficiencia:</strong> Aumentar el uso eficiente de los recursos hídricos en todos los sectores y la cooperación internacional. </li>
+    </ul>
+
+</div>
+
+<p class="text-center">
+    <a href="https://www.un.org/sustainabledevelopment/es/water-and-sanitation/" 
+       target="_blank">
+        Más información sobre el ODS 6
+    </a>
+</p>
+
+{% endblock %}

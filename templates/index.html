@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="row">
+
+    <!-- COLUMNA IZQUIERDA: MENÚ -->
+    <div class="col-md-3">
+        <div class="list-group shadow">
+             <a href="/ods6" class="list-group-item list-group-item-action">
+                🌍 ODS 6
+            </a>
+            <a href="/cuidado" class="list-group-item list-group-item-action">
+                🌱 Cuidado del agua
+            </a>
+            
+            <a href="/ahorro" class="list-group-item list-group-item-action">
+                💧 Ahorro de agua
+            </a>
+           
+            <a href="/purificacion" class="list-group-item list-group-item-action">
+                🚰 Purificación básica
+            </a>
+        </div>
+    </div>
+
+    <!-- COLUMNA CENTRAL -->
+    <div class="col-md-9">
+        <div class="card shadow p-4">
+            <h2 class="text-primary mb-3">Bienvenida</h2>
+
+            <p>
+                Esta plataforma interactiva brinda información sobre la
+                disponibilidad del agua, puntos de abastecimiento alternativos
+                y contenidos de concientización ambiental, alineada con el
+                <strong>ODS 6: Agua limpia y saneamiento</strong>.
+            </p>
+
+            <p>
+                El objetivo es apoyar a la población ante situaciones de
+                escasez hídrica mediante información clara, visual y accesible.
+            </p>
+
+            <a href="/mapa" class="btn btn-primary btn-lg mt-3">
+                🌍 Ver mapa interactivo
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
