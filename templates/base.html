@@ -13,50 +13,106 @@
 
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary px-4">
-    <span class="navbar-brand fw-bold">
-        💧 BlueMap - Plataforma de Acceso al Agua
-    </span>
+<nav class="navbar navbar-expand-lg navbar-dark px-4">
+    
+    <a href="{{ url_for('index') }}" 
+       class="navbar-brand fw-bold d-flex align-items-center gap-2">
+
+        <img src="{{ url_for('static', filename='img/logo.jpeg') }}"
+             alt="Logo"
+             width="40"
+             height="40"
+             class="rounded-circle">
+
+        BlueMap
+    </a>
 
     <div class="collapse navbar-collapse">
 
+        <!-- MENÚ DERECHO -->
+        <div class="ms-auto d-flex align-items-center gap-2">
 
-    <!-- MENÚ DERECHO  -->
-    <div class="ms-auto d-flex align-items-center gap-2">
-
-        <a href="{{ url_for('index') }}"
-                       class="btn btn-outline-light fw-bold px-3">
-
-            Inicio
-        </a>
-
-        {% if session.get('user_name') %}
-            <span class="text-white fw-bold me-2">
-                👤 {{ session.user_name }}
-            </span>
-
-            <a href="{{ url_for('logout') }}"
-               class="btn btn-danger fw-bold px-3">
-                Salir
+            <a href="{{ url_for('index') }}"
+               class="btn btn-outline-light fw-bold px-3">
+                Inicio
             </a>
-        {% else %}
+
+            {% if session.get('usuario_id') %}
+
+            <div class="dropdown">
+
+                <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center gap-2"
+                        data-bs-toggle="dropdown">
+
+                    {% if session.get('usuario_imagen') %}
+                        <img src="{{ url_for('static', filename='perfiles/' ~ session.get('usuario_imagen')) }}"
+                             width="35"
+                             height="35"
+                             class="rounded-circle">
+                    {% else %}
+                        <div style="
+                            width:35px;
+                            height:35px;
+                            border-radius:50%;
+                            background:#6f42c1;
+                            color:white;
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            font-weight:bold;
+                            font-size:14px;
+                        ">
+                            {{ session.get('usuario_nombre','U')[0]|upper }}
+                        </div>
+                    {% endif %}
+
+                    <span class="fw-bold">
+                        {{ session.get('usuario_nombre','Usuario') }}
+                    </span>
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-end">
+
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('perfil') }}">
+                            Mi perfil
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="dropdown-item" href="#">
+                             Notificaciones
+                        </a>
+                    </li>
+
+                    <li><hr class="dropdown-divider"></li>
+
+                    <li>
+                        <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                            Cerrar sesión
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            {% else %}
+
             <a href="{{ url_for('login') }}"
                class="btn btn-outline-light fw-bold px-3">
                 Login
             </a>
 
             <a href="{{ url_for('register') }}"
-                 class="btn btn-outline-light fw-bold px-3">
-
+               class="btn btn-outline-light fw-bold px-3">
                 Registro
             </a>
-        {% endif %}
 
+            {% endif %}
+
+        </div>
     </div>
-</div>
-
 </nav>
-
 
 <div class="container my-5">
     {% block contenido %}{% endblock %}

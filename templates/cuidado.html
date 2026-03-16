@@ -1,18 +1,103 @@
 {% extends "base.html" %}
 
 {% block contenido %}
-<div class="card shadow p-4">
-    <h2 class="text-primary">Cuidado del agua</h2>
+<div class="container mt-4">
 
-    <p>
-        El cuidado del agua implica un uso responsable y consciente del recurso,
-        evitando su contaminación y desperdicio.
-    </p>
+    <!-- BOTON REGRESAR -->
+    <a href="{{ url_for('inicio') }}" class="btn btn-outline-primary mb-3">
+        ⬅ Regresar al inicio
+    </a>
 
-    <p>
-        Proteger ríos, lagos y mantos acuíferos es una responsabilidad compartida
-        entre la sociedad y las instituciones.
-    </p>
+
+    <!-- Título -->
+         <div class="text-center mb-4">
+        <h1 class="text-primary">💧 Cuidado del Agua</h1>
+        <p class="lead">
+            Información sobre la importancia de proteger este recurso natural.
+        </p>
+    </div>
+
+    <!-- Imagen -->
+    <div class="text-center mb-4">
+        <img src="{{ url_for('static', filename='img/Cuidado.jpeg') }}" 
+             class="img-fluid rounded shadow"
+             style="max-width: 900px;"
+             alt="Cuidado del agua">
+            
+    </div>
+
+    <!-- Información -->
+    <div class="card shadow p-4 mb-4">
+        <h3 class="text-success">¿Por qué es importante cuidar el agua?</h3>
+
+        <p>
+            El agua es uno de los recursos naturales más importantes para la vida
+            en el planeta. Todos los seres vivos dependen de ella para sobrevivir.
+        </p>
+
+        <p>
+            Sin embargo, el crecimiento de la población, la contaminación y el
+            uso excesivo están provocando que el agua potable sea cada vez más
+            escasa en muchas regiones del mundo.
+        </p>
+
+        <p>
+            Por esta razón, es fundamental promover hábitos responsables que
+            permitan conservar este recurso para las futuras generaciones.
+        </p>
+    </div>
+
+     <!-- Lista de Motivos  -->
+    <div class="card shadow p-4 mb-4">
+        <h3 class="text-success">Motivos para ahorrar el agua</h3>
+
+        <ul class="list-group">
+            <li class="list-group-item">Es un recurso natural y de primera necesidad para la vida en el planeta.</li>
+            <li class="list-group-item">Factor determinante para la evolución de la sociedad. 
+                                        Se utiliza, para beber, aseo personal, cocinar, regar, llenar piscinas, entre otros usos.</li>
+            <li class="list-group-item">Es fundamental en las actividades industriales del hombre (energía eléctrica, desarrollo de 
+                                        actividades agrarias, turísticas, etc.) por ello  es factor determinante en el desarrollo de una sociedad.</li>
+            <li class="list-group-item">La naturaleza, al completar el ciclo natural del agua, hace que ésta no se pierda y vuelva a ser utilizada
+                                         por los seres vivos, por eso se dice que el agua es un recurso natural renovable.</li>
+            <li class="list-group-item">Es considerada como un recurso renovable cuando se controla responsablemente su uso.</li>
+            <li class="list-group-item">Existe carencia de plantas depuradoras de agua lo cual no permite que esta agua pueda volver a utilizarse.</li>
+            <li class="list-group-item">Existe escasez de agua afecta a millones de personas en todo el mundo debido al aumento de la población mundial, hace que aumente la demanda de agua limpia.</li>
+            <li class="list-group-item">La desigual distribución y la gestión ineficaz provocan que millones de personas no tengan acceso al agua
+                                         potable, y que, si se sigue esta tendencia, en menos de veinte años el número de personas privadas del acceso al 
+                                         agua potable se multiplique por cuatro.</li>
+            <li class="list-group-item">Escasez de agua debido al desequilibrio del ciclo hídrico, propiciado por la deforestación, sobreexplotación de los acuíferos, gestión ineficiente y contaminación.</li>
+            <li class="list-group-item">Los seres humanos tenemos la obligación de proteger este recurso y tomar conciencia de los riesgos que producirían su escasez.</li>
+           
+        </ul>
+    </div>
+
+    <!-- Lista de acciones -->
+    <div class="card shadow p-4 mb-4">
+        <h3 class="text-success">Acciones para cuidar el agua</h3>
+
+        <ul class="list-group">
+            <li class="list-group-item">Cerrar la llave mientras te cepillas los dientes.</li>
+            <li class="list-group-item">Reparar fugas en tuberías o llaves.</li>
+            <li class="list-group-item">Usar solo el agua necesaria al lavar.</li>
+            <li class="list-group-item">No tirar basura en ríos, lagos o mares.</li>
+            <li class="list-group-item">Reutilizar agua cuando sea posible.</li>
+        </ul>
+    </div>
+
+    <!-- Video -->
+    <div class="card shadow p-4 mb-4">
+        <h3 class="text-success">Video Informativo</h3>
+
+        <div class="ratio ratio-16x9">
+            <iframe 
+            src="https://www.youtube.com/embed/LPmz9eLpPcM"
+            title="Consejos para un buen uso del Agua"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen>
+            </iframe>
+        </div>
+    </div>
 
 </div>
 {% endblock %}

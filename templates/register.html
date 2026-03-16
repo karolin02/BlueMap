@@ -1,34 +1,143 @@
 {% extends "base.html" %}
 
 {% block contenido %}
+
+<style>
+.google-btn {
+    background-color: #ffff;
+    color: #2a2a2a;
+    border: 1px solid #2c2c2c;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.google-btn:hover {
+    background-color: #245b92;
+    color: #ffffff;
+}
+</style>
+
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card shadow p-4">
             <h2 class="text-center mb-3">Registro</h2>
 
-            <form method="post">
-                <input class="form-control mb-3" name="nombre" placeholder="Nombre" required>
+            {% if error %}
+                <div class="alert alert-danger">
+                    {{ error }}
+                </div>
+            {% endif %}
 
-                <input class="form-control mb-3" name="email" type="email" placeholder="Correo" required>
+            {% if success %}
+                <div class="alert alert-success">
+                    {{ success }}
+                </div>
+            {% endif %}
+            
+            <form method="post" autocomplete="on">
+               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-                <input class="form-control mb-3" name="password" type="password" placeholder="Contraseña" required>
+               <input class="form-control mb-3"
+                        name="nombre"
+                        placeholder="Nombre"
+                        required
+                        minlength="3"
+                        maxlength="50">
 
+                <input class="form-control mb-3"
+                       name="email"
+                       type="email"
+                       placeholder="Correo electrónico"
+                       required
+                        maxlength="100">
+
+                <!-- Contraseña con boton mostrar -->
+                <div class="input-group mb-3">
+                    <input class="form-control"
+                        name="password"
+                        type="password"
+                        id="passwordRegister"
+                        placeholder="Contraseña (mínimo 8 caracteres, 1 mayúscula y 1 número)"
+                        autocomplete="new-password"
+                        required
+                        minlength="8"
+                        pattern="(?=.*[A-Z])(?=.*[0-9]).{8,}"
+                        title="Debe tener al menos 8 caracteres, una mayúscula y un número">
+
+                    <button class="btn btn-outline-secondary"
+                            type="button"
+                            onclick="togglePasswordRegister()">
+                        👁
+                    </button>
+                </div>
+
+                <select class="form-control mb-3" name="municipio" required>
+                    <option value="">Selecciona tu municipio</option>
+                    <option value="garcia">García</option>
+                </select>
+
+                <input class="form-control mb-3"
+                       name="colonia"
+                       placeholder="Colonia"
+                       required
+                       maxlength="100">
+
+                <!-- Checkbox de términos -->
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="acepto" name="acepto" required>
+                    <label class="form-check-label" for="acepto">
+                        Acepto los
+                        <a href="/terminos" target="_blank">Términos de servicio</a>
+                        y la
+                        <a href="/privacidad" target="_blank">Política de privacidad</a>
+                    </label>
+                </div>
+
+                <!-- Botón de registro -->
                 <button class="btn btn-primary w-100 mb-3">
-                    Registrarse
+                    Crear cuenta
                 </button>
+
+                <div class="text-center mb-3">O regístrate con</div>
+
+                <!-- Botón Google -->
+                <a href="{{ url_for('login_google') }}"
+                   class="google-btn w-100 d-flex align-items-center justify-content-center mb-3">
+                    <img src="https://developers.google.com/identity/images/g-logo.png"
+                         alt="Google"
+                         width="20"
+                         class="me-2">
+                    Continuar con Google
+                </a>
             </form>
 
-            <!-- NAVEGACIÓN -->
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between mt-3">
                 <a href="{{ url_for('index') }}" class="btn btn-secondary">
-                    ⬅ 
+                    ⬅ Volver
                 </a>
 
-                <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
+                <a href="{{ url_for('login') }}" class="btn btn-secondary">
                     Iniciar sesión
                 </a>
             </div>
+
         </div>
     </div>
 </div>
+
+<!-- SCRIPT -->
+<script>
+function togglePasswordRegister() {
+    var input = document.getElementById("passwordRegister");
+    if (input.type === "password") {
+        input.type = "text";
+    } else {
+        input.type = "password";
+    }
+}
+</script>
+
 {% endblock %}

@@ -1,23 +1,93 @@
 {% extends "base.html" %}
 
 {% block contenido %}
+
 <h2 class="mb-3">Iniciar sesión</h2>
 
-<form method="post">
-    <input class="form-control mb-2" name="email" type="email" placeholder="Correo" required>
-    <input class="form-control mb-2" name="password" type="password" placeholder="Contraseña" required>
+<!-- MENSAJES FLASH (verificación exitosa o error) -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show mt-3">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
 
-    <button class="btn btn-success w-100 mb-2">Entrar</button>
+{% if error %}
+    <div class="alert alert-danger">
+        {{ error }}
+    </div>
+{% endif %}
+
+<form method="post" autocomplete="on">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    {% if request.args.get('next') %}
+    <input type="hidden" name="next" value="{{ request.args.get('next') }}">
+    {% endif %}
+
+   <input 
+        class="form-control mb-2" 
+        name="email" 
+        type="email" 
+        placeholder="Correo" 
+        required
+        maxlength="100"
+    >
+
+    <!-- CAMPO CONTRASEÑA CON BOTÓN MOSTRAR -->
+    <div class="input-group mb-2">
+       <input 
+            class="form-control" 
+            name="password" 
+            type="password" 
+            id="password"
+            placeholder="Contraseña" 
+            required
+            minlength="8"
+            maxlength="128"
+        >
+        <button 
+            class="btn btn-outline-secondary" 
+            type="button"
+            onclick="togglePassword()">
+            👁
+        </button>
+    </div>
+    
+    <a href="{{ url_for('recuperar') }}" class="d-block mt-2 text-center">
+        ¿Olvidaste tu contraseña?
+    </a>
+
+   <button class="btn btn-primary w-100 mb-2">
+    Entrar
+    </button>
 </form>
 
-<!-- BOTONES DE NAVEGACIÓN -->
+
 <div class="d-flex justify-content-between mt-3">
     <a href="{{ url_for('index') }}" class="btn btn-secondary">
-        ⬅ 
+        ⬅ Volver
     </a>
 
     <a href="{{ url_for('register') }}" class="btn btn-outline-primary">
         Registrarse
     </a>
 </div>
+
+<!-- SCRIPT PARA MOSTRAR / OCULTAR CONTRASEÑA -->
+<script>
+function togglePassword() {
+    var input = document.getElementById("password");
+    if (input.type === "password") {
+        input.type = "text";
+    } else {
+        input.type = "password";
+    }
+}
+</script>
+
 {% endblock %}

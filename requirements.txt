@@ -1,0 +1,6 @@
+flask
+flask-mail
+authlib
+python-dotenv
+requests
+flask-wtf

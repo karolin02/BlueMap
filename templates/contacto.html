@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<h2 class="mb-3">Formulario de Contacto</h2>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<form method="post" autocomplete="on">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <input type="text"
+       name="nombre"
+       required
+       minlength="3"
+       maxlength="50"
+       class="form-control mb-2"
+       placeholder="Nombre">
+
+    <input type="email"
+       name="email"
+       required
+       maxlength="100"
+       class="form-control mb-2"
+       placeholder="Correo">
+
+    <textarea name="mensaje"
+          required
+          minlength="10"
+          maxlength="500"
+          class="form-control mb-2"
+          placeholder="Mensaje"></textarea>
+
+    <button class="btn btn-primary w-100">
+        Enviar
+    </button>
+</form>
+
+{% endblock %}
+
+
+

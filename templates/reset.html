@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block contenido %}
+
+<h2>Nueva contraseña</h2>
+
+<form method="post" autocomplete="on">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- CONTRASEÑA CON BOTÓN MOSTRAR -->
+    <div class="input-group mb-3">
+        <input class="form-control"
+                type="password"
+                name="password"
+                id="passwordReset"
+                placeholder="Nueva contraseña"
+                required
+                minlength="8"
+                maxlength="128"
+                pattern="(?=.*[A-Z])(?=.*[0-9]).{8,}"
+                title="Debe tener mínimo 8 caracteres, una mayúscula y un número">
+       
+        <button class="btn btn-outline-secondary"
+                type="button"
+                onclick="togglePasswordReset()">
+            👁
+        </button>
+    </div>
+
+    <button class="btn btn-success w-100">
+        Actualizar contraseña
+    </button>
+</form>
+
+<!-- SCRIPT -->
+<script>
+function togglePasswordReset() {
+    var input = document.getElementById("passwordReset");
+    if (input.type === "password") {
+        input.type = "text";
+    } else {
+        input.type = "password";
+    }
+}
+</script>
+
+{% endblock %}

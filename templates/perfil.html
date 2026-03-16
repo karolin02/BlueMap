@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<h3 class="text-center mb-4 fw-bold">Mi perfil</h3>
+
+<div class="d-flex justify-content-center">
+    <div class="card p-4 shadow-lg border-0 rounded-4 text-center" style="max-width:420px; width:100%;">
+
+        <!-- foto actual -->
+        <div class="mb-3">
+            <img id="preview"
+                 src="{{ url_for('static', filename='perfiles/' ~ session.get('usuario_imagen','default.png')) }}"
+                 width="150"
+                 height="150"
+                 class="rounded-circle shadow"
+                 style="object-fit: cover; border:4px solid #245b92;">
+        </div>
+
+        <p class="fw-bold fs-5 mb-4">
+            {{ session.get('usuario_nombre') }}
+        </p>
+
+        <!-- formulario subir foto -->
+        <form action="{{ url_for('subir_foto') }}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+
+            <label class="form-label fw-semibold text-start w-100">
+                Cambiar foto de perfil
+            </label>
+
+            <input type="file"
+                   name="foto"
+                   class="form-control mb-3"
+                   accept="image/*"
+                   onchange="previewImage(event)"
+                   required>
+
+            <button class="btn btn-primary w-100 rounded-3 fw-semibold">
+                📤 Subir foto
+            </button>
+        </form>
+
+        <!-- botón volver -->
+        <a href="javascript:history.back()" 
+           class="btn btn-outline-secondary w-100 mt-3 rounded-3">
+           ← Volver
+        </a>
+
+    </div>
+</div>
+
+<script>
+function previewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function(){
+        document.getElementById('preview').src = reader.result;
+    };
+    reader.readAsDataURL(event.target.files[0]);
+}
+</script>
+
+{% endblock %}

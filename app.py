@@ -1,17 +1,85 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
-import folium
+
+
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
+import re
+from datetime import datetime, timedelta
+import secrets
+from flask_mail import Mail, Message
+from authlib.integrations.flask_client import OAuth
+from markupsafe import escape
+from werkzeug.utils import secure_filename
+from flask_wtf.csrf import CSRFProtect
+from dotenv import load_dotenv
+import requests
 
-# ------------------ CONFIGURACIÓN ------------------
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
+GOOGLE_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+
+def validar_password(password):
+    return (
+        len(password) >= 8 and
+        re.search(r"[A-Z]", password) and
+        re.search(r"[0-9]", password)
+    )
+
+# CONFIGURACIÓN----------------------------------------------------------------------------
 app = Flask(__name__)
-app.secret_key = "clave_secreta_super_segura"
+app.secret_key = os.environ.get("SECRET_KEY", "dev_key")
+csrf = CSRFProtect(app)
+
+
+
+# CONFIGURACIÓN SEGURA DE COOKIES DE SESIÓN-----------------------------------------------
+app.config['SESSION_COOKIE_SECURE'] = not app.debug
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "database.db")
 
-# ------------------ DB MAPA ------------------
+
+
+# PERFIL USUARIO -------------------------------------------------------------------------
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "perfiles")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+
+
+# CONFIGURACIÓN DE AUTENTICACIÓN OAUTH (GOOGLE)---------------------------------------------
+oauth = OAuth(app)
+
+google = oauth.register(
+    name='google',
+    client_id=os.environ.get("GOOGLE_CLIENT_ID"),
+    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={
+        'scope': 'openid email profile'
+    }
+)
+
+
+
+# CONFIG CORREO ---------------------------------------------------------------------
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'bluemap561@gmail.com'  # correo
+app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
+app.config['MAIL_DEFAULT_SENDER'] = 'bluemap561@gmail.com'
+
+
+mail = Mail(app)
+
+@app.route("/")
+def inicio():
+    return render_template("index.html")
+
+# DB MAPA ------------------------------------------------------------------------------
 def get_db_data():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -25,35 +93,66 @@ def get_db_data():
     conn.close()
     return colonias, puntos
 
-# ------------------ RUTAS PRINCIPALES ------------------
+
+
+# RUTAS PRINCIPALES ---------------------------------------------------------------------
 @app.route("/")
 def index():
     return render_template("index.html")
-
+# MAPA -----------------------------------------------------------------------------------
 @app.route("/mapa")
 def mapa():
-    colonias, puntos = get_db_data()
+    if 'usuario_id' not in session:
+        flash("Debes iniciar sesión.", "warning")
+        return redirect(url_for('login'))
 
-    mapa = folium.Map(location=[25.809, -100.598], zoom_start=13)
+    if session.get('municipio', '').lower() != "garcia":
+        return "Acceso restringido"
 
-    for c in colonias:
-        folium.Marker(
-            [c[2], c[3]],
-            popup=f"Colonia: {c[1]}<br>Horario: {c[4]}",
-            icon=folium.Icon(color="red", icon="tint")
-        ).add_to(mapa)
-
-    for p in puntos:
-        folium.Marker(
-            [p[2], p[3]],
-            popup=f"Punto: {p[1]}",
-            icon=folium.Icon(color="blue", icon="info-sign")
-        ).add_to(mapa)
-
-    mapa.save(os.path.join(BASE_DIR, "static", "mapa_interactivo.html"))
     return render_template("mapa.html")
+# API ----------------------------------------------------------------------------
 
-# ------------------ CONTENIDO ------------------
+@app.route("/api/geocode")
+def geocode():
+    direccion = request.args.get("direccion")
+
+    if not direccion:
+        return {"error": "Dirección requerida"}, 400
+
+    url = "https://maps.googleapis.com/maps/api/geocode/json"
+
+    params = {
+        "address": direccion,
+        "key": GOOGLE_API_KEY
+    }
+
+    try:
+        response = requests.get(url, params=params, timeout=5)
+        data = response.json()
+
+        print("STATUS GOOGLE:", data["status"])  
+        print("RESPUESTA COMPLETA:", data)    
+
+        if response.status_code != 200:
+            return {"error": "Error externo"}, 500
+
+        if data["status"] != "OK":
+            return {"error": "Dirección no encontrada"}, 404
+
+        location = data["results"][0]["geometry"]["location"]
+
+        return {
+            "lat": location["lat"],
+            "lng": location["lng"]
+        }
+
+    except requests.exceptions.Timeout:
+        return {"error": "Timeout externo"}, 504
+
+    except Exception:
+        return {"error": "Error interno"}, 500
+
+# CONTENIDO -----------------------------------------------------------------------
 @app.route("/ahorro")
 def ahorro():
     return render_template("ahorro.html")
@@ -70,64 +169,633 @@ def ods6():
 def purificacion():
     return render_template("purificacion.html")
 
-# ------------------ REGISTRO ------------------
-@app.route("/register", methods=["GET", "POST"])
+
+
+# REGISTRO ----------------------------------------------------------------------------
+
+@app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == "POST":
-        nombre = request.form["nombre"]
-        email = request.form["email"]
-        password = generate_password_hash(request.form["password"])
+
+    if request.method == 'POST':
+
+        nombre = escape(request.form.get('nombre', '').strip())
+        email = escape(request.form.get('email', '').strip())
+        password = request.form.get('password', '').strip()
+        municipio = escape(request.form.get('municipio', '').strip())
+        colonia = escape(request.form.get('colonia', '').strip())
+
+
+        # Validar campos vacíos
+        if not nombre or not email or not password or not municipio or not colonia:
+            flash("Todos los campos son obligatorios.", "danger")
+            return redirect(url_for("register"))
+
+
+        # Validar longitud nombre
+        if len(nombre) < 3 or len(nombre) > 50:
+            flash("El nombre debe tener entre 3 y 50 caracteres.", "danger")
+            return redirect(url_for("register"))
+
+
+        # Validar email formato
+        email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        if not re.match(email_regex, email) or len(email) > 100:
+            flash("Correo inválido.", "danger")
+            return redirect(url_for("register"))
+
+
+        # Validar contraseña fuerte
+        if not validar_password(password):
+            flash("La contraseña debe tener mínimo 8 caracteres, una mayúscula y un número.", "danger")
+            return redirect(url_for("register"))
+
+
+        # Validar municipio permitido
+        if municipio.lower() != "garcia":
+            flash("Solo se permite registro en García.", "danger")
+            return redirect(url_for("register"))
+
+        password_hash = generate_password_hash(password)
+        token = secrets.token_urlsafe(32)
 
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         try:
-            cursor.execute(
-                "INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)",
-                (nombre, email, password)
-            )
-            conn.commit()
-        except sqlite3.IntegrityError:
-            return "⚠️ Este correo ya está registrado"
-        finally:
-            conn.close()
+            cursor.execute("""
+                INSERT INTO usuarios 
+                (nombre, email, password, municipio, colonia, verificado, token_verificacion)
+                VALUES (?, ?, ?, ?, ?, 0, ?)
+            """, (nombre, email, password_hash, municipio, colonia, token))
 
+            conn.commit()
+
+        except sqlite3.IntegrityError:
+            
+            conn.close()
+            flash("El correo ya está registrado.", "danger")
+            return redirect(url_for("register"))
+
+        conn.close()
+
+
+        # Link dinámico correcto
+        link_verificacion = url_for('verificar', token=token, _external=True)
+
+        msg = Message(
+            'Confirma tu cuenta',
+            recipients=[email]
+        )
+
+        msg.body = f"Verifica tu cuenta aquí: {link_verificacion}"
+
+        msg.html = f"""
+        <!DOCTYPE html>
+        <html>
+        <body style="margin:0; padding:0; background-color:#f4f6f9; font-family:Arial, sans-serif;">
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+        <tr>
+        <td align="center">
+
+        <table width="600" cellpadding="0" cellspacing="0" 
+        style="background:white; padding:30px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+            <!-- LOGO -->
+            <tr>
+                <td align="center">
+                    <img src="https://res.cloudinary.com/dcwdpn3oj/image/upload/v1771703112/logo_aaq5hv.jpg" 
+                        alt="BlueMap Logo" 
+                        width="120" 
+                        style="margin-bottom:20px;">
+                </td>
+            </tr>
+
+            <!-- TITULO -->
+            <tr>
+                <td align="center">
+                    <h2 style="color:#245b92; margin-bottom:10px;">
+                        Bienvenido a BlueMap 💧
+                    </h2>
+                </td>
+            </tr>
+
+            <!-- TEXTO -->
+            <tr>
+                <td align="center" style="color:#555; font-size:16px;">
+                    Gracias por registrarte en nuestra plataforma.
+                    <br><br>
+                    Haz clic en el botón para verificar tu cuenta:
+                </td>
+            </tr>
+
+            <!-- BOTON -->
+            <tr>
+                <td align="center" style="padding:25px;">
+                    <a href="{link_verificacion}" 
+                    style="background:#28a745; 
+                            color:white; 
+                            padding:14px 28px; 
+                            text-decoration:none; 
+                            border-radius:6px; 
+                            font-weight:bold;
+                            display:inline-block;">
+                        Verificar cuenta
+                    </a>
+                </td>
+            </tr>
+
+            <!-- FOOTER -->
+            <tr>
+                <td align="center" style="font-size:13px; color:#999;">
+                    Si no creaste esta cuenta, puedes ignorar este mensaje.
+                    <br><br>
+                    © 2026 BlueMap
+                </td>
+            </tr>
+
+        </table>
+
+        </td>
+        </tr>
+        </table>
+
+        </body>
+        </html>
+        """
+
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print("Error enviando correo:", e)
+
+        flash("Registro exitoso. Revisa tu correo para verificar tu cuenta.", "success")
         return redirect(url_for("login"))
 
-    return render_template("register.html")
+    return render_template('register.html')
 
-# ------------------ LOGIN ------------------
-@app.route("/login", methods=["GET", "POST"])
+
+
+# VERIFICACIÓN --------------------------------------------------------------------------
+@app.route("/verificar/<token>")
+def verificar(token):
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id FROM usuarios WHERE token_verificacion = ?", (token,))
+    usuario = cursor.fetchone()
+
+    if not usuario:
+        conn.close()
+        flash("Token inválido o expirado.", "danger")
+        return redirect(url_for("login"))
+
+    cursor.execute("""
+        UPDATE usuarios
+        SET verificado = 1,
+            token_verificacion = NULL
+        WHERE id = ?
+    """, (usuario[0],))
+
+    conn.commit()
+    conn.close()
+
+    flash("Cuenta verificada correctamente. Ahora puedes iniciar sesión.", "success")
+    return redirect(url_for("login"))
+
+
+
+# LOGIN -----------------------------------------------------------------------------------
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
+
+    if request.method == 'POST':
+
+        email = escape(request.form.get('email', '').strip())
+        password = request.form.get('password', '').strip()
+        next_page = request.form.get("next")
+
+
+        # Validar campos vacíos
+        if not email or not password:
+            flash("Todos los campos son obligatorios.", "danger")
+            return redirect(url_for("login"))
+
+
+        # Validar formato email
+        email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        if not re.match(email_regex, email) or len(email) > 100:
+            flash("Correo inválido.", "danger")
+            return redirect(url_for("login"))
 
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-
-        cursor.execute(
-            "SELECT id, nombre, password FROM usuarios WHERE email = ?",
-            (email,)
-        )
-        user = cursor.fetchone()
+        cursor.execute("SELECT * FROM usuarios WHERE email = ?", (email,))
+        usuario = cursor.fetchone()
         conn.close()
 
-        if user and check_password_hash(user[2], password):
-            session["user_id"] = user[0]
-            session["user_name"] = user[1]
-            return redirect(url_for("index"))
+
+        # Verificar credenciales
+        if not usuario or not check_password_hash(usuario[3], password):
+            flash("Correo o contraseña incorrectos.", "danger")
+            return redirect(url_for("login"))
+
+
+        # Verificar cuenta confirmada
+        if usuario[6] == 0:
+            flash("Debes verificar tu correo antes de iniciar sesión.", "warning")
+            return redirect(url_for("login"))
+
+
+        # Crear sesión
+        session['usuario_id'] = usuario[0]
+        session['usuario_nombre'] = usuario[1]
+        session['municipio'] = usuario[4]
+
+        if len(usuario) > 10:
+            session['usuario_imagen'] = usuario[10]
         else:
-            return "❌ Correo o contraseña incorrectos"
+            session['usuario_imagen'] = None
+
+
+        # Protección contra Open Redirect
+        if next_page and next_page.startswith('/'):
+            return redirect(next_page)
+
+        return redirect(url_for("mapa"))
 
     return render_template("login.html")
 
-# ------------------ LOGOUT ------------------
+
+
+# RECUPERAR CONTRASEÑA --------------------------------------------------------------------
+
+@app.route('/recuperar', methods=['GET', 'POST'])
+def recuperar():
+
+    if request.method == 'POST':
+
+        email = escape(request.form.get('email', '').strip())
+
+
+        # Validar campo vacío
+        if not email:
+            flash("Ingresa un correo válido.", "danger")
+            return redirect(url_for('recuperar'))
+
+
+        # Validar formato email
+        email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        if not re.match(email_regex, email) or len(email) > 100:
+            flash("Correo inválido.", "danger")
+            return redirect(url_for('recuperar'))
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM usuarios WHERE email = ?", (email,))
+        usuario = cursor.fetchone()
+
+        if usuario:
+            token = secrets.token_urlsafe(32)
+            expiracion = datetime.utcnow() + timedelta(minutes=30)
+
+            cursor.execute("""
+                UPDATE usuarios
+                SET token_recuperacion = ?, expiracion_token = ?
+                WHERE id = ?
+            """, (token, expiracion, usuario[0]))
+
+            conn.commit()
+
+            link = url_for('reset_password', token=token, _external=True)
+
+            msg = Message(
+                'Recuperación de contraseña - BlueMap 💧',
+                recipients=[email]
+            )
+
+            msg.body = f"Recupera tu contraseña aquí: {link}"
+
+            msg.html = f"""
+            <!DOCTYPE html>
+            <html>
+            <body style="margin:0; padding:0; background-color:#f4f6f9; font-family:Arial, sans-serif;">
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+            <tr>
+            <td align="center">
+
+            <table width="600" cellpadding="0" cellspacing="0"
+            style="background:white; padding:30px; border-radius:10px;">
+
+                <!-- LOGO -->
+                <tr>
+                    <td align="center">
+                        <img src="https://res.cloudinary.com/dcwdpn3oj/image/upload/v1771703112/logo_aaq5hv.jpg"
+                            alt="BlueMap Logo"
+                            width="120"
+                            style="margin-bottom:20px;">
+                    </td>
+                </tr>
+
+                <!-- TITULO -->
+                <tr>
+                    <td align="center">
+                        <h2 style="color:#245b92; margin-bottom:10px;">
+                            Recuperación de contraseña 💧
+                        </h2>
+                    </td>
+                </tr>
+
+                <!-- TEXTO -->
+                <tr>
+                    <td align="center" style="color:#555; font-size:16px;">
+                        Recibimos una solicitud para restablecer tu contraseña.
+                        <br><br>
+                        Haz clic en el botón para continuar:
+                    </td>
+                </tr>
+
+                <!-- BOTON -->
+                <tr>
+                    <td align="center" style="padding:25px;">
+                        <a href="{link}"
+                        style="background:#0d6efd;
+                                color:white;
+                                padding:14px 28px;
+                                text-decoration:none;
+                                border-radius:6px;
+                                font-weight:bold;
+                                display:inline-block;">
+                            Restablecer contraseña
+                        </a>
+                    </td>
+                </tr>
+
+                <!-- AVISO -->
+                <tr>
+                    <td align="center" style="font-size:13px; color:#888;">
+                        Si no solicitaste este cambio, puedes ignorar este mensaje.
+                        <br><br>
+                        El enlace expirará en 30 minutos.
+                    </td>
+                </tr>
+
+                <!-- FOOTER -->
+                <tr>
+                    <td align="center" style="font-size:12px; color:#aaa; padding-top:15px;">
+                        © 2026 BlueMap
+                    </td>
+                </tr>
+
+            </table>
+
+            </td>
+            </tr>
+            </table>
+
+            </body>
+            </html>
+            """
+
+            try:
+                mail.send(msg)
+            except Exception as e:
+                print("Error enviando correo:", e)
+
+        conn.close()
+
+
+        # Mensaje genérico para evitar enumeración de usuarios
+        flash("Si el correo existe, recibirás un enlace de recuperación.", "info")
+        return redirect(url_for('login'))
+
+    return render_template('recuperar.html')
+
+
+
+# RESETEAR CONTRASEÑA----------------------------------------------------------------
+
+@app.route('/reset/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, expiracion_token 
+        FROM usuarios 
+        WHERE token_recuperacion = ?
+    """, (token,))
+    usuario = cursor.fetchone()
+
+    if not usuario:
+        conn.close()
+        flash("Token inválido o expirado.", "danger")
+        return redirect(url_for('login'))
+
+    expiracion = datetime.strptime(usuario[1], "%Y-%m-%d %H:%M:%S.%f")
+
+    if datetime.utcnow() > expiracion:
+        conn.close()
+        flash("El enlace ha expirado.", "danger")
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        nueva_password = request.form['password']
+
+        if not validar_password(nueva_password):
+            flash("La contraseña debe tener mínimo 8 caracteres, una mayúscula y un número.", "danger")
+            return redirect(request.url)
+
+        password_hash = generate_password_hash(nueva_password)
+
+        cursor.execute("""
+            UPDATE usuarios
+            SET password = ?, token_recuperacion = NULL, expiracion_token = NULL
+            WHERE id = ?
+        """, (password_hash, usuario[0]))
+
+        conn.commit()
+        conn.close()
+
+        flash("Contraseña actualizada correctamente.", "success")
+        return redirect(url_for('login'))
+
+    conn.close()
+    return render_template('reset.html')
+
+
+
+# AGREGAR RUTAS DEL CLIENTE --------------------------------------------------------------------------
+@app.route('/login/google')
+def login_google():
+    redirect_uri = url_for('authorize', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+
+
+@app.route('/authorize')
+def authorize():
+    token = google.authorize_access_token()
+    resp = google.get('https://openidconnect.googleapis.com/v1/userinfo')  # URL completa
+    user_info = resp.json()
+
+    email = user_info['email']
+    nombre = user_info['name']
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Revisar si ya existe el usuario
+    cursor.execute("SELECT * FROM usuarios WHERE email=?", (email,))
+    user = cursor.fetchone()
+
+    if not user:
+        password_hash = generate_password_hash("GOOGLE_LOGIN")
+        cursor.execute("""
+            INSERT INTO usuarios 
+            (nombre, email, password, municipio, colonia, verificado)
+            VALUES (?, ?, ?, ?, ?, 1)
+        """, (nombre, email, password_hash, "garcia", "N/A"))
+        conn.commit()
+
+    # Obtener usuario para sesión
+    cursor.execute("SELECT * FROM usuarios WHERE email=?", (email,))
+    usuario = cursor.fetchone()
+    conn.close()
+
+    session['usuario_id'] = usuario[0]
+    session['usuario_nombre'] = usuario[1]
+    session['municipio'] = usuario[4]
+
+    # manejar imagen de perfil (igual que login normal)
+    if len(usuario) > 10:
+        session['usuario_imagen'] = usuario[10]  # puede ser None
+    else:
+        session['usuario_imagen'] = None
+
+    return redirect(url_for('mapa'))
+
+
+# CONTACTO-----------------------------------------------------------------------------------
+@app.route('/contacto', methods=['GET', 'POST'])
+def contacto():
+
+    if request.method == 'POST':
+
+        nombre = escape(request.form.get('nombre', '').strip())
+        email = escape(request.form.get('email', '').strip())
+        mensaje = escape(request.form.get('mensaje', '').strip())
+
+
+        #  Validar campos vacíos
+        if not nombre or not email or not mensaje:
+            flash("Todos los campos son obligatorios.", "danger")
+            return redirect(url_for('contacto'))
+
+
+        #  Validar longitud nombre
+        if len(nombre) > 50:
+            flash("El nombre no puede exceder 50 caracteres.", "danger")
+            return redirect(url_for('contacto'))
+
+
+        #  Validar formato de email
+        email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        if not re.match(email_regex, email) or len(email) > 100:
+            flash("Correo electrónico inválido.", "danger")
+            return redirect(url_for('contacto'))
+
+
+        #  Validar longitud mensaje
+        if len(mensaje) < 10 or len(mensaje) > 500:
+            flash("El mensaje debe tener entre 10 y 500 caracteres.", "danger")
+            return redirect(url_for('contacto'))
+
+
+        #  Si todo está correcto
+        flash("Mensaje enviado correctamente.", "success")
+        return redirect(url_for('contacto'))
+
+    return render_template('contacto.html')
+
+
+
+# SUBIR FOTO PERFIL ------------------------------------------------------------------------------
+
+@app.route('/subir_foto', methods=['POST'])
+def subir_foto():
+
+    if 'usuario_id' not in session:
+        return redirect(url_for('login'))
+
+    if 'foto' not in request.files:
+        flash("No se seleccionó imagen.", "warning")
+        return redirect(url_for('perfil'))
+
+    archivo = request.files['foto']
+
+    if archivo.filename == '':
+        flash("Archivo inválido.", "warning")
+        return redirect(url_for('perfil'))
+
+
+    # Validar extensión permitida
+    extensiones_permitidas = ('.png', '.jpg', '.jpeg')
+    if not archivo.filename.lower().endswith(extensiones_permitidas):
+        flash("Formato de imagen no permitido. Solo PNG, JPG o JPEG.", "danger")
+        return redirect(url_for('perfil'))
+
+
+    #  Sanitizar nombre
+    nombre_seguro = secure_filename(archivo.filename)
+    extension = os.path.splitext(nombre_seguro)[1]
+
+
+    # Guardar con nombre controlado por el sistema
+    nombre_archivo = f"user_{session['usuario_id']}{extension}"
+    ruta = os.path.join(app.config['UPLOAD_FOLDER'], nombre_archivo)
+
+    archivo.save(ruta)
+
+
+    # Guardar en base de datos
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE usuarios SET imagen=? WHERE id=?",
+        (nombre_archivo, session['usuario_id'])
+    )
+    conn.commit()
+    conn.close()
+
+    session['usuario_imagen'] = nombre_archivo
+    flash("Foto actualizada correctamente.", "success")
+
+    return redirect(url_for('perfil'))
+
+
+
+# PERFIL --------------------------------------------------------------------------------
+@app.route('/perfil')
+def perfil():
+    if 'usuario_id' not in session:
+        flash("Debes iniciar sesión.", "warning")
+        return redirect(url_for('login'))
+
+    return render_template('perfil.html')
+
+
+# LOGOUT ---------------------------------------------------------------------------------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("index"))
 
-# ------------------ EJECUCIÓN ------------------
+
+
+
+# EJECUCIÓN ------------------------------------------------------------------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

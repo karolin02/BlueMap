@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block contenido %}
+
 <div class="row">
 
     <!-- COLUMNA IZQUIERDA: MENÚ -->
@@ -12,11 +13,7 @@
             <a href="/cuidado" class="list-group-item list-group-item-action">
                 🌱 Cuidado del agua
             </a>
-            
-            <a href="/ahorro" class="list-group-item list-group-item-action">
-                💧 Ahorro de agua
-            </a>
-           
+
             <a href="/purificacion" class="list-group-item list-group-item-action">
                 🚰 Purificación básica
             </a>
@@ -26,7 +23,7 @@
     <!-- COLUMNA CENTRAL -->
     <div class="col-md-9">
         <div class="card shadow p-4">
-            <h2 class="text-primary mb-3">Bienvenida</h2>
+            <h2 class="mb-3">Bienvenido</h2>
 
             <p>
                 Esta plataforma interactiva brinda información sobre la
@@ -44,6 +41,84 @@
                 🌍 Ver mapa interactivo
             </a>
         </div>
+    </div>
+
+</div>
+
+<!-- ================= SECCIÓN INSTITUCIONAL ================= -->
+
+<hr class="my-5">
+
+<h3 class="text-center fw-bold mb-4">
+    Nuestra Esencia: Misión, Visión y Valores
+</h3>
+
+<div class="row text-center mb-5">
+
+    <div class="col-md-4 mb-3">
+        <div class="card card-mision shadow p-4 h-100 border-0">
+            <h5 class="fw-bold">Misión</h5>
+            <p>
+                Promover el acceso equitativo al agua potable,
+                fomentando conciencia social y soluciones digitales
+                alineadas con el ODS 6.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card card-vision shadow p-4 h-100 border-0">
+            <h5 class="fw-bold">Visión</h5>
+            <p>
+                Ser una plataforma digital de referencia en México
+                para la gestión y monitoreo del acceso al agua.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card card-valores shadow p-4 h-100 border-0">
+            <h5 class="fw-bold">Valores</h5>
+            <ul class="list-unstyled">
+                <li>Transparencia</li>
+                <li>Sostenibilidad</li>
+                <li>Responsabilidad social</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ================= SECCIÓN CONTACTO INFERIOR ================= -->
+
+<div class="contacto-section p-5 mt-4 shadow">
+
+    <div class="row align-items-center">
+
+        <!-- TEXTO -->
+        <div class="col-md-8">
+            <h4 class="fw-bold mb-3">Contáctanos</h4>
+
+            <p>
+                ¿Tienes dudas o sugerencias sobre la plataforma?
+                Estamos para ayudarte.
+            </p>
+
+            <ul class="mb-0">
+                <li>✉ contacto: bluemap561@gmail.com</li>
+                <li>🕒 Lun–Vie 9am–6pm</li>
+            </ul>
+        </div>
+
+        <!-- BOTÓN -->
+        <div class="col-md-4 text-md-end text-center mt-4 mt-md-0">
+            <a href="{{ url_for('contacto') }}"
+               class="btn btn-primary btn-lg px-4">
+                Contactar
+            </a>
+        </div>
+
     </div>
 
 </div>

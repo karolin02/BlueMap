@@ -1,24 +1,118 @@
 {% extends "base.html" %}
 
 {% block contenido %}
-<div class="card shadow p-4">
-    <h2 class="text-primary">Purificación básica del agua</h2>
+<div class="container mt-4">
 
-    <p>
-        En situaciones de emergencia, es importante conocer métodos básicos
-        para purificar el agua y evitar enfermedades.
-    </p>
+    <!-- BOTON REGRESAR -->
+    <a href="{{ url_for('inicio') }}" class="btn btn-outline-primary mb-3">
+        ⬅ Regresar al inicio
+    </a>
 
-    <ul>
-        <li>Hervir el agua durante al menos 5 minutos</li>
-        <li>Agregar cloro apto para consumo humano</li>
-        <li>Filtrar el agua con tela limpia o filtros caseros</li>
-    </ul>
+    <!-- TITULO -->
+    <div class="text-center mb-4">
+        <h1 class="text-primary">💧 Purificación básica del agua</h1>
+        <p class="lead">
+            Métodos sencillos que pueden ayudar a hacer el agua más segura
+            en situaciones de emergencia.
+        </p>
+    </div>
+
+        <!-- INFORMACION -->
+    <div class="card shadow p-4 mb-4">
+        <h3 class="text-success">Métodos básicos de purificación</h3>
+
+        <p>
+            En situaciones donde no se dispone de agua potable, es importante
+            aplicar métodos básicos de purificación para reducir el riesgo
+            de enfermedades causadas por bacterias o contaminantes.
+        </p>
+
+        <ul class="list-group">
+            <li class="list-group-item">
+
+                <h4 class="text-success"><strong> HERVIR EL AGUA:</strong></h4> Hervir el agua durante
+                al menos 5 minutos ayuda a eliminar muchos microorganismos.
+                 <p><strong>Ventajas:</strong></p>
+                <p>-Elimina la mayoría de bacterias, virus y parásitos que pueden causar enfermedades.
+
+                <p>-Es un método muy efectivo y seguro cuando se hace correctamente.</p> 
+
+                <p>-No requiere productos químicos, solo una fuente de calor.</p> 
+
+                <p>-Es un método recomendado por organizaciones de salud en situaciones de emergencia.</p>
+
+                <p> <strong>Desventajas:</strong></p>
+
+                <p>-Necesita combustible o electricidad.</p> 
+
+                <p>-No elimina metales pesados ni químicos que pueda tener el agua.</p>
+            </li>
+
+
+            <li class="list-group-item">            
+     
+            <h4 class="text-success"> <strong>FILTRADO:</strong></h4> Filtrar el agua con tela limpia,
+                arena o filtros caseros ayuda a eliminar partículas visibles.
+            <p><strong>Ventajas:</strong></p>
+            <p>-Permite eliminar suciedad, sedimentos y partículas visibles del agua.</p>
+            <p>-Puede hacerse con materiales sencillos como tela, arena, grava o filtros caseros.</p>
+            <p>-Mejora el aspecto y la claridad del agua.</p>
+            <p>-Puede ser el primer paso antes de hervir o desinfectar el agua.</p>
+
+            <p><strong>Desventajas</strong></p>
+            <p>-No elimina completamente bacterias o virus.</p>
+            <p>-Generalmente necesita combinarse con otro método para que el agua sea más segura.</p>
+
+
+            </li>
+        </ul>
+    </div>
+
+    <!-- IMAGENES IZQUIERDA Y DERECHA -->
+    <div class="row mb-4">
+
+        <!-- Imagen izquierda -->
+        <div class="col-md-6 text-center">
+            <img 
+                src="{{ url_for('static', filename='img/Puri.jpg') }}" 
+                alt="Purificación del agua"
+                class="img-fluid rounded shadow"
+                style="max-height: 500px;"
+            >
+        </div>
+
+        <!-- Imagen derecha -->
+        <div class="col-md-6 text-center">
+            <img 
+                src="{{ url_for('static', filename='img/Puri2.jpg') }}" 
+                alt="Métodos de filtración"
+                class="img-fluid rounded shadow"
+                style="max-height: 500px;"
+            >
+        </div>
+
+    </div>
+
+
+
+    <!-- VIDEO -->
+    <div class="card shadow p-4 mb-4">
+        <h3 class="text-success">Video educativo</h3>
+
+        <div class="ratio ratio-16x9">
+            <iframe 
+                src="https://www.youtube.com/embed/LPmz9eLpPcM"
+                title="Purificación del agua"
+                allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+
+    <!-- ADVERTENCIA -->
+    <div class="alert alert-warning mt-3">
+        ⚠️ <strong>Importante:</strong> Estos métodos son soluciones de emergencia 
+        y no sustituyen un sistema de agua potable certificado.
+    </div>
 
 </div>
-
-<div class="alert alert-warning mt-3">
-    ⚠️ Estos métodos son de emergencia y no sustituyen un sistema de agua potable certificado.
-</div>
-
 {% endblock %}

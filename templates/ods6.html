@@ -1,46 +1,89 @@
 {% extends "base.html" %}
 
 {% block contenido %}
-<div class="card shadow p-4">
 
-    <h2 class="text-primary mb-3">ODS 6: Agua limpia y saneamiento</h2>
 
-   
+<div class="container mt-4">
+    <!-- BOTON REGRESAR -->
+    <a href="{{ url_for('inicio') }}" class="btn btn-outline-primary mb-3">
+        ⬅ Regresar al inicio
+    </a>
 
-    <!-- IMAGEN GRANDE Y VISIBLE -->
+
+    <!-- TITULO -->
+
+    <div class="text-center mb-4">
+        <h1 class="text-primary">🌍 ODS 6: Agua limpia y saneamiento</h1>
+        <p class="lead">
+            Garantizar la disponibilidad de agua y su gestión sostenible
+            para todas las personas.
+        </p>
+    </div>
+
+    <!-- IMAGEN -->
     <div class="text-center mb-4">
         <img 
             src="{{ url_for('static', filename='img/ODS06.jpg') }}" 
             alt="ODS 6 Agua limpia y saneamiento"
-            class="img-fluid rounded"
-            style="max-width: 1300px; width: 100%;"
+            class="img-fluid rounded shadow"
+            style="max-width: 900px;"
         >
     </div>
 
-    <p>El ODS 6 ("Agua limpia y saneamiento") es el sexto de los 17 Objetivos de Desarrollo Sostenible de la ONU, 
-        cuyo fin para 2030 es garantizar la disponibilidad, gestión sostenible y el acceso universal a agua potable 
-        segura y a saneamiento adecuado para todos, mejorando la calidad del agua y protegiendo ecosistemas. </p>
+    <!-- DESCRIPCIÓN -->
+    <div class="card shadow p-4 mb-4">
+        <h3 class="text-success">¿Qué es el ODS 6?</h3>
 
+        <p>
+            El <strong>ODS 6</strong> es uno de los 17 Objetivos de Desarrollo Sostenible
+            establecidos por la Organización de las Naciones Unidas (ONU).
+            Su meta para el año <strong>2030</strong> es garantizar la disponibilidad,
+            el acceso universal y la gestión sostenible del agua potable
+            y el saneamiento para todas las personas.
+        </p>
 
-    <p><strong>Puntos clave del ODS 6</strong></p>
+        <p>
+            Este objetivo también busca mejorar la calidad del agua,
+            reducir la contaminación y proteger los ecosistemas
+            relacionados con los recursos hídricos.
+        </p>
+    </div>
 
-    <ul>
-        <li><strong>Acceso Universal:</strong> Lograr acceso equitativo al agua potable y a servicios de saneamiento e higiene (baños) 
-            para toda la población, poniendo fin a la defecación al aire libre.</li>
-        <li><strong>Gestión Sostenible:</strong> Mejorar la calidad del agua reduciendo la contaminación, eliminando el vertido de residuos
-             y aumentando el reciclado y la reutilización segura.</li>
-        <li><strong>Protección de Ecosistemas:</strong> Proteger y restablecer ecosistemas relacionados con el agua, incluidos bosques, montañas
-             humedales y ríos.</li>
-        <li><strong>Eficiencia:</strong> Aumentar el uso eficiente de los recursos hídricos en todos los sectores y la cooperación internacional. </li>
-    </ul>
+    <!-- PUNTOS CLAVE -->
+    <div class="card shadow p-4 mb-4">
+        <h3 class="text-success">Puntos clave del ODS 6</h3>
+
+        <ul class="list-group">
+            <li class="list-group-item">
+                <strong>🚰 Acceso universal:</strong> Garantizar que todas las personas
+                tengan acceso a agua potable segura y servicios de saneamiento.
+            </li>
+
+            <li class="list-group-item">
+                <strong>♻️ Gestión sostenible:</strong> Reducir la contaminación
+                del agua y promover su reutilización segura.
+            </li>
+
+            <li class="list-group-item">
+                <strong>🌱 Protección de ecosistemas:</strong> Proteger ríos,
+                lagos, bosques y humedales que dependen del agua.
+            </li>
+
+            <li class="list-group-item">
+                <strong>💧 Uso eficiente:</strong> Mejorar el uso del agua
+                en la agricultura, industria y consumo doméstico.
+            </li>
+        </ul>
+    </div>
+
+    <!-- BOTÓN DE INFORMACIÓN -->
+    <div class="text-center mb-4">
+        <a href="https://www.un.org/sustainabledevelopment/es/water-and-sanitation/"
+           target="_blank"
+           class="btn btn-primary btn-lg">
+           Más información sobre el ODS 6
+        </a>
+    </div>
 
 </div>
-
-<p class="text-center">
-    <a href="https://www.un.org/sustainabledevelopment/es/water-and-sanitation/" 
-       target="_blank">
-        Más información sobre el ODS 6
-    </a>
-</p>
-
 {% endblock %}
