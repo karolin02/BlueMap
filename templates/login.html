@@ -65,8 +65,20 @@
    <button class="btn btn-primary w-100 mb-2">
     Entrar
     </button>
-</form>
+    </form>
 
+    <div class="text-center mb-3">Iniciar Sesion con</div>
+
+                <!-- Botón Google -->
+                <a href="{{ url_for('login_google') }}"
+                   class="google-btn w-100 d-flex align-items-center justify-content-center mb-3">
+                    <img src="https://developers.google.com/identity/images/g-logo.png"
+                         alt="Google"
+                         width="20"
+                         class="me-2">
+                    Continuar con Google
+                </a>
+    </form>
 
 <div class="d-flex justify-content-between mt-3">
     <a href="{{ url_for('index') }}" class="btn btn-secondary">

@@ -8,6 +8,7 @@
 <button onclick="buscar()">Buscar</button>
 
 <div id="map" style="height:500px; margin-top:15px;"></div>
+<div id="streetview" style="height:400px; margin-top:20px;"></div>
 
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
@@ -19,15 +20,282 @@
 let map;
 let marcador;
 
-// Inicializar mapa
-map = L.map('map').setView([25.809, -100.598], 13);
+// límites exactos aproximados de García
+const garciaBounds = [
+    [25.70, -100.75], // suroeste
+    [25.92, -100.45]  // noreste
+];
 
-// Cargar tiles de OpenStreetMap
+// crear mapa
+map = L.map('map', {
+    maxBounds: garciaBounds,
+    maxBoundsViscosity: 1.0,
+    minZoom: 12,
+    maxZoom: 18
+});
+
+// ajustar vista al municipio
+map.fitBounds(garciaBounds);
+
+// cargar mapa
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
+    attribution: '© OpenStreetMap contributors',
+    noWrap: true
 }).addTo(map);
 
+//Iconos 
+// ICONO TINACO
+var tinacoIcon = L.icon({
+    iconUrl: "/static/img/tinaco.png",
+    iconSize: [80,80],
+    iconAnchor: [17,35],
+    popupAnchor: [0,-30]
+});
+
+// ICONO LLAVE
+var llaveIcon = L.icon({
+    iconUrl: "/static/img/llave.png",
+    iconSize: [35,35],
+    iconAnchor: [17,35],
+    popupAnchor: [0,-30]
+});
+
+// ICONO DISPENSADOR
+var dispensadorIcon = L.icon({
+    iconUrl: "/static/img/dispensador.png",
+    iconSize: [80,80],
+    iconAnchor: [17,35],
+    popupAnchor: [0,-30]
+});
+
+//Tinacos 
+L.marker([25.799835054912286, -100.5869485070523], {icon: tinacoIcon})
+.addTo(map)
+.bindPopup("Tinaco público - Plaza Solidaridad")
+.on("click", function(){
+    abrirStreetView(25.799835054912286, -100.5869485070523);
+});
+
+
+L.marker([25.79952632531042, -100.59413132092136], {icon: tinacoIcon})
+.addTo(map)
+.bindPopup("Tinaco público - Parque Zacatecas")
+.on("click", function(){
+    abrirStreetView(25.79952632531042, -100.59413132092136);
+});
+
+
+L.marker([25.80176191538088, -100.48918785371599], {icon: tinacoIcon})
+.addTo(map)
+.bindPopup("Tinaco público - Parque Sevilla ")
+.on("click", function(){
+    abrirStreetView(25.80176191538088, -100.48918785371599);
+});
+
+L.marker([25.78227220641904, -100.57303406266323], {icon: tinacoIcon})
+.addTo(map)
+.bindPopup("Tinaco público - Celestina  ")
+.on("click", function(){
+    abrirStreetView(25.78227220641904, -100.57303406266323);
+});
+
+L.marker([25.793627032818886, -100.55905427147016], {icon: tinacoIcon})
+.addTo(map)
+.bindPopup("Tinaco público - Parque Noe V ")
+.on("click", function(){
+    abrirStreetView(25.793627032818886, -100.55905427147016);
+});
+
+L.marker([25.79929076333571, -100.61281726041129], {icon: tinacoIcon})
+.addTo(map)
+.bindPopup("Tinaco público - Parque paseo de capellania ")
+.on("click", function(){
+    abrirStreetView(25.79929076333571, -100.61281726041129);
+});
+
+L.marker([25.808339792055715, -100.48101995797703], {icon: tinacoIcon})
+.addTo(map)
+.bindPopup("Tinaco público - Burdeos  ")
+.on("click", function(){
+    abrirStreetView(25.808339792055715, -100.48101995797703);
+});
+
+L.marker([25.797904225724558, -100.47557860643903], {icon: tinacoIcon})
+.addTo(map)
+.bindPopup("Tinaco público - Plaza 1 San Antonio")
+.on("click", function(){
+    abrirStreetView(25.797904225724558, -100.47557860643903);
+});
+
+L.marker([25.781065308161207, -100.48553678816481], {icon: tinacoIcon})
+.addTo(map)
+.bindPopup("Tinaco público - Av. Sta. Elena")
+.on("click", function(){
+    abrirStreetView(25.781065308161207, -100.48553678816481);
+});
+
+//DISPENSADORES
+
+//Polvorin
+L.marker([25.80295965757161, -100.59929035936662], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - The Water House")
+.on("click", function(){
+    abrirStreetView(25.80295965757161, -100.59929035936662);
+});
+
+//Sierra Real
+L.marker([25.77657245363354, -100.58843828268265], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - The Water House")
+.on("click", function(){
+    abrirStreetView(25.77657245363354, -100.58843828268265);
+});
+
+//16 de Septiembre
+L.marker([25.796552531469267, -100.5950134435567], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - The Water House")
+.on("click", function(){
+    abrirStreetView(25.796552531469267, -100.5950134435567);
+});
+
+//Maravilla
+L.marker([25.80227880450103, -100.61165676226074], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - The Water House")
+.on("click", function(){
+    abrirStreetView(25.80227880450103, -100.61165676226074);
+});
+
+//C. Ficus
+L.marker([25.786130077562166, -100.5879042579081], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - The Water House")
+.on("click", function(){
+    abrirStreetView(25.786130077562166, -100.5879042579081);
+});
+
+//Av. Hacienda del Sol
+L.marker([25.787462137244514, -100.56750493016676], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - The Water House")
+.on("click", function(){
+    abrirStreetView(25.787462137244514, -100.56750493016676);
+});
+
+//Mineros
+L.marker([25.794893059358316, -100.491132703432], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - The Water House")
+.on("click", function(){
+    abrirStreetView(25.794893059358316, -100.491132703432);
+});
+
+
+//Cedros
+L.marker([25.790643874841738, -100.58895589393289], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - The Water House")
+.on("click", function(){
+    abrirStreetView(25.790643874841738, -100.58895589393289);
+});
+
+//Praderas de Galeana
+L.marker([25.780742476293387, -100.5953429108924], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - The Water House")
+.on("click", function(){
+    abrirStreetView(25.780742476293387, -100.5953429108924);
+});
+
+//Hacienda San Miguel
+L.marker([25.70176939007305, -100.50745968925021], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - The Water House")
+.on("click", function(){
+    abrirStreetView(25.70176939007305, -100.50745968925021);
+});
+
+// Perimetral Ote.
+L.marker([25.69065128996179, -100.44387052168601], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - The Water House")
+.on("click", function(){
+    abrirStreetView(25.69065128996179, -100.44387052168601);
+});
+
+//Villa Napoles
+L.marker([25.820852215791966, -100.6179109825146], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - Agua purificada")
+.on("click", function(){
+    abrirStreetView(25.820852215791966, -100.6179109825146);
+});
+
+
+//Jazmin
+L.marker([25.79868953706595, -100.58946028128113], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - Agua purificada")
+.on("click", function(){
+    abrirStreetView(25.79868953706595, -100.58946028128113);
+});
+
+//Av Villa Corona
+L.marker([25.776655020284288, -100.42515472914147], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - The Water House")
+.on("click", function(){
+    abrirStreetView(25.776655020284288, -100.42515472914147);
+});
+
+//Misión Azur
+L.marker([25.78725254614831, -100.46459734691865], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - The Water House")
+.on("click", function(){
+    abrirStreetView(25.78725254614831, -100.46459734691865);
+});
+
+//Av. Sta. Elena
+
+L.marker([25.784215287822235, -100.48555882996257], {icon: dispensadorIcon})
+.addTo(map)
+.bindPopup("Dispensador de agua - The Water House")
+.on("click", function(){
+    abrirStreetView(25.784215287822235, -100.48555882996257);
+});
+
+
+
+
+
+
+
+
+
+let panorama;
+
+function abrirStreetView(lat, lng) {
+
+    if (!panorama) {
+        panorama = new google.maps.StreetViewPanorama(
+            document.getElementById("streetview"),
+            {
+                pov: { heading: 34, pitch: 10 },
+                zoom: 1
+            }
+        );
+    }
+
+    panorama.setPosition({ lat: lat, lng: lng });
+}
+
+
+// búsqueda
 function buscar() {
+
     const direccion = document.getElementById("direccion").value;
 
     if (!direccion) {
@@ -41,21 +309,30 @@ function buscar() {
             return res.json();
         })
         .then(data => {
+
             const lat = data.lat;
             const lng = data.lng;
 
-            // Eliminar marcador anterior si existe
             if (marcador) {
                 map.removeLayer(marcador);
             }
 
             marcador = L.marker([lat, lng]).addTo(map);
+
             map.setView([lat, lng], 15);
+
+            // abrir street view automáticamente
+            abrirStreetView(lat, lng);
+
         })
         .catch(error => {
-            alert("Error: " + error.message);
+            alert(error.message);
         });
 }
+</script>
+
+<script async defer 
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD_1FVBa4Puss5MxDWFGuKXT1ONG738UGo&libraries=maps">
 </script>
 
 {% endblock %}
