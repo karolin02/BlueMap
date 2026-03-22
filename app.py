@@ -114,6 +114,11 @@ def mapa():
     if 'usuario_id' not in session:
         flash("Debes iniciar sesión.", "warning")
         return redirect(url_for('login'))
+    # 👑 ADMIN: acceso total
+    if session.get('rol') == 'admin':
+        return render_template("mapa.html")
+
+    # 👤 USUARIO: restringido por municipio
     
     if session.get('municipio', '').lower().replace("í", "i") != "garcia":
         return "Acceso restringido"
