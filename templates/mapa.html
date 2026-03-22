@@ -4,7 +4,18 @@
 
 <h2>Mapa de suministro</h2>
 
-<input type="text" id="direccion" placeholder="Escribe una dirección">
+<input type="text" 
+       id="direccion" 
+       name="direccion"
+       placeholder="Escribe una dirección"
+       list="lista_colonias">
+
+<datalist id="lista_colonias">
+    {% for colonia in colonias %}
+        <option value="{{ colonia[1] }}">
+    {% endfor %}
+</datalist>
+
 <button onclick="buscar()">Buscar</button>
 
 <div id="map" style="height:500px; margin-top:15px;"></div>

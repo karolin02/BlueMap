@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<h3>Acceso Administrador</h3>
+
+<form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <input class="form-control mb-2"
+           name="correo"
+           placeholder="Correo"
+           required>
+
+    <input class="form-control mb-2"
+           type="password"
+           name="password"
+           placeholder="Contraseña"
+           required>
+
+    <button class="btn btn-dark w-100">
+        Entrar
+    </button>
+
+</form>
+
+{% endblock %}

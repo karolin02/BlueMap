@@ -14,7 +14,8 @@
     {% endif %}
 {% endwith %}
 
-<form method="post" autocomplete="on">
+<form method="POST" action="/contacto" autocomplete="on">
+
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <input type="text"
@@ -43,7 +44,10 @@
         Enviar
     </button>
 </form>
-
+<br>
+<a href="{{ url_for('index') }}" class="btn btn-secondary">
+                    ⬅ Volver
+</a>
 {% endblock %}
 
 

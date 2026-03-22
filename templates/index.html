@@ -50,7 +50,7 @@
 <hr class="my-5">
 
 <h3 class="text-center fw-bold mb-4">
-    Nuestra Esencia: Misión, Visión y Valores
+   Misión, Visión y Valores
 </h3>
 
 <div class="row text-center mb-5">
@@ -102,7 +102,9 @@
 
             <p>
                 ¿Tienes dudas o sugerencias sobre la plataforma?
-                Estamos para ayudarte.
+            </p>
+            <p>
+                Estamos a tu disposición para ayudarte. Puedes resolver tus dudas mediante el siguiente formulario o vía correo electrónico.
             </p>
 
             <ul class="mb-0">
@@ -122,4 +124,12 @@
     </div>
 
 </div>
+{% if request.path == '/' %}
+<div style="position: fixed; bottom: 10px; right: 10px; opacity: 0.3;">
+    <a href="/admin_login" style="text-decoration: none; color: gray; font-size: 12px;">
+        admin
+    </a>
+</div>
+{% endif %}
+
 {% endblock %}

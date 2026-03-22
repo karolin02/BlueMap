@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<h2 class="mb-4">Panel de Administrador</h2>
+
+<div class="row">
+
+    <div class="col-md-4 mb-3">
+        <a href="/admin/mensajes" class="btn btn-primary w-100 p-4">
+            📩 Ver Mensajes
+        </a>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <a href="/admin/notificaciones" class="btn btn-warning w-100 p-4">
+            🔔 Enviar Notificaciones
+        </a>
+    </div>
+
+  <div class="col-md-4 mb-3">
+    <a href="{{ url_for('ver_notificaciones') }}" class="btn btn-success w-100 p-4">
+        👀 Ver como usuario
+    </a>
+</div>
+
+</div>
+
+{% endblock %}

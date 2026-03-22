@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<h2 class="mb-4">🔔 Notificaciones</h2>
+
+{% for n in notificaciones %}
+
+<div class="card mb-3 shadow-sm">
+    
+    <!-- HEADER (TÍTULO + FECHA) -->
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="fw-bold mb-0">
+                {{ n["titulo"] }}
+            </h5>
+
+            <small class="text-muted text-end">
+                🕒 {{ n.fecha }}
+            </small>
+        </div>
+
+        <!-- MENSAJE -->
+        <p style="line-height:1.6;">
+            {{ n["mensaje"] | safe }}
+        </p>
+
+        <!-- COLONIAS -->
+        <p class="text-muted small mb-0">
+            📍 Colonias:
+            {% if n["colonias"] %}
+                {% for col in n["colonias"].split(",") %}
+                    <span class="badge bg-primary me-1 p-2 fs-6">{{ col }}</span>
+                {% endfor %}
+            {% else %}
+                <span>No especificadas</span>
+            {% endif %}
+        </p>
+    </div>
+
+</div>
+
+{% else %}
+<div class="alert alert-info">
+    No hay notificaciones disponibles.
+</div>
+{% endfor %}
+
+<a href="{{ url_for('index') }}" class="btn btn-secondary">
+    ⬅ Volver
+</a>
+
+{% endblock %}

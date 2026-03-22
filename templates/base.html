@@ -14,7 +14,7 @@
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark px-4">
-    
+
     <a href="{{ url_for('index') }}" 
        class="navbar-brand fw-bold d-flex align-items-center gap-2">
 
@@ -29,7 +29,6 @@
 
     <div class="collapse navbar-collapse">
 
-        <!-- MENÚ DERECHO -->
         <div class="ms-auto d-flex align-items-center gap-2">
 
             <a href="{{ url_for('index') }}"
@@ -69,6 +68,11 @@
                     <span class="fw-bold">
                         {{ session.get('usuario_nombre','Usuario') }}
                     </span>
+
+                    {% if session.get('rol') == 'admin' %}
+                        <span class="badge bg-danger ms-2">Admin</span>
+                    {% endif %}
+
                 </button>
 
                 <ul class="dropdown-menu dropdown-menu-end">
@@ -79,10 +83,25 @@
                         </a>
                     </li>
 
+                    {% if session.get('rol') == 'admin' %}
                     <li>
-                        <a class="dropdown-item" href="#">
-                             Notificaciones
+                        <a class="dropdown-item text-warning" href="/admin">
+                            Panel Admin
                         </a>
+                    </li>
+                    {% endif %}
+
+                    <li>
+                        <a href="{{ url_for('ver_notificaciones') }}" class="btn btn-light position-relative">
+                            Notificaciones🔔
+                            
+                           {% if nuevas_notificaciones > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ nuevas_notificaciones }}
+                            </span>
+                           {% endif %}
+                        </a>
+                      
                     </li>
 
                     <li><hr class="dropdown-divider"></li>
@@ -121,6 +140,15 @@
 <footer class="text-center text-muted mb-4">
     © Todos los derechos reservados - BlueMap
 </footer>
+
+<!-- Botón oculto admin -->
+{% if request.path == '/' %}
+<div style="position: fixed; bottom: 10px; right: 10px; opacity: 0.3;">
+    <a href="/admin_login" style="text-decoration: none; color: gray; font-size: 12px;">
+        admin
+    </a>
+</div>
+{% endif %}
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

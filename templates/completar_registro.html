@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<h2>Completa tu registro</h2>
+
+<form method="POST" action="/guardar-usuario">
+
+  <input class="form-control mb-3" type="text" name="nombre" value="{{ nombre }}" readonly>
+
+  <input class="form-control mb-3" type="email" name="correo" value="{{ correo }}" readonly>
+
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <!-- Municipio automático -->
+   <!-- Municipio visible bonito -->
+<input class="form-control mb-3" type="text" value="García" readonly>
+
+<!-- Municipio real que se envía -->
+<input type="hidden" name="municipio" value="García">
+
+
+  <!-- Colonia -->
+  <select name="colonia" class="form-control mb-3" required>
+    <option value="">Selecciona tu colonia</option>
+   {% for c in colonias %}
+  <option value="{{ c[0] }}">{{ c[0] }}</option>
+{% endfor %}
+  </select>
+
+  <button class="btn btn-primary">Guardar</button>
+
+</form>
+
+{% endblock %}

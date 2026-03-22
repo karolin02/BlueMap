@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<h2 class="mb-3">Mensajes de Contacto</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Mensaje</th>
+            <th>Fecha</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for m in mensajes %}
+        <tr>
+            <td>{{ m[0] }}</td>
+            <td>{{ m[1] }}</td>
+            <td>{{ m[2] }}</td>
+            <td>{{ m[3] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="/admin" class="btn btn-secondary">⬅ Volver</a>
+
+{% endblock %}

@@ -80,11 +80,17 @@
                 </select>
 
                 <input class="form-control mb-3"
-                       name="colonia"
-                       placeholder="Colonia"
-                       required
-                       maxlength="100">
+                    name="colonia"
+                    placeholder="Colonia"
+                    required
+                    maxlength="100"
+                    list="lista_colonias">
 
+                <datalist id="lista_colonias">
+                    {% for colonia in colonias %}
+                        <option value="{{ colonia[1] }}">
+                    {% endfor %}
+                </datalist>
                 <!-- Checkbox de términos -->
                 <div class="form-check mb-3">
                     <input class="form-check-input" type="checkbox" id="acepto" name="acepto" required>

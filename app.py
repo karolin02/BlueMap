@@ -75,9 +75,6 @@ app.config['MAIL_DEFAULT_SENDER'] = 'bluemap561@gmail.com'
 
 mail = Mail(app)
 
-@app.route("/")
-def inicio():
-    return render_template("index.html")
 
 # DB MAPA ------------------------------------------------------------------------------
 def get_db_data():
@@ -99,14 +96,19 @@ def get_db_data():
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route('/')
+def inicio():
+    return render_template('index.html')
 # MAPA -----------------------------------------------------------------------------------
 @app.route("/mapa")
 def mapa():
     if 'usuario_id' not in session:
         flash("Debes iniciar sesión.", "warning")
         return redirect(url_for('login'))
-
-    if session.get('municipio', '').lower() != "garcia":
+    
+    if session.get('municipio', '').lower().replace("í", "i") != "garcia":
         return "Acceso restringido"
 
     return render_template("mapa.html")
@@ -172,9 +174,15 @@ def purificacion():
 
 
 # REGISTRO ----------------------------------------------------------------------------
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # 🔥 TRAER COLONIAS SIEMPRE
+    cursor.execute("SELECT id, nombre FROM colonias")
+    colonias = cursor.fetchall()
 
     if request.method == 'POST':
 
@@ -184,42 +192,34 @@ def register():
         municipio = escape(request.form.get('municipio', '').strip())
         colonia = escape(request.form.get('colonia', '').strip())
 
-
         # Validar campos vacíos
         if not nombre or not email or not password or not municipio or not colonia:
             flash("Todos los campos son obligatorios.", "danger")
-            return redirect(url_for("register"))
-
+            return render_template("register.html", colonias=colonias)
 
         # Validar longitud nombre
         if len(nombre) < 3 or len(nombre) > 50:
             flash("El nombre debe tener entre 3 y 50 caracteres.", "danger")
-            return redirect(url_for("register"))
-
+            return render_template("register.html", colonias=colonias)
 
         # Validar email formato
         email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         if not re.match(email_regex, email) or len(email) > 100:
             flash("Correo inválido.", "danger")
-            return redirect(url_for("register"))
-
+            return render_template("register.html", colonias=colonias)
 
         # Validar contraseña fuerte
         if not validar_password(password):
             flash("La contraseña debe tener mínimo 8 caracteres, una mayúscula y un número.", "danger")
-            return redirect(url_for("register"))
-
+            return render_template("register.html", colonias=colonias)
 
         # Validar municipio permitido
         if municipio.lower() != "garcia":
             flash("Solo se permite registro en García.", "danger")
-            return redirect(url_for("register"))
+            return render_template("register.html", colonias=colonias)
 
         password_hash = generate_password_hash(password)
         token = secrets.token_urlsafe(32)
-
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
 
         try:
             cursor.execute("""
@@ -231,13 +231,11 @@ def register():
             conn.commit()
 
         except sqlite3.IntegrityError:
-            
             conn.close()
             flash("El correo ya está registrado.", "danger")
-            return redirect(url_for("register"))
+            return render_template("register.html", colonias=colonias)
 
         conn.close()
-
 
         # Link dinámico correcto
         link_verificacion = url_for('verificar', token=token, _external=True)
@@ -332,9 +330,98 @@ def register():
         flash("Registro exitoso. Revisa tu correo para verificar tu cuenta.", "success")
         return redirect(url_for("login"))
 
-    return render_template('register.html')
+    # 🔥 GET (cuando solo carga la página)
+    conn.close()
+    return render_template('register.html', colonias=colonias)
+
+#-----------------------------------------------------------------------------------------
+@app.route('/completar-registro')
+def completar_registro():
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT nombre FROM colonias")
+    colonias = cursor.fetchall()
+
+    conn.close()
+
+    # datos de Google guardados en sesión
+    nombre = session.get("nombre")
+    correo = session.get("correo")
+
+    return render_template(
+        "completar_registro.html",
+        colonias=colonias,
+        nombre=nombre,
+        correo=correo
+    )
 
 
+#------------------------------------------------------------------------------------------
+@app.route('/guardar-usuario', methods=['POST'])
+def guardar_usuario():
+
+    nombre = request.form.get('nombre', '').strip()
+    correo = request.form.get('correo', '').strip()
+    municipio = "garcia"
+    colonia = request.form.get('colonia', '').strip()
+
+    # 🔒 Validar campos vacíos (PRIMERO)
+    if not nombre or not correo or not colonia:
+        flash("Todos los campos son obligatorios.", "danger")
+        return redirect(url_for('completar_registro'))
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # 🔒 Validar si ya existe el usuario
+    cursor.execute("SELECT id FROM usuarios WHERE email=?", (correo,))
+    existe = cursor.fetchone()
+
+    if existe:
+        conn.close()
+        flash("Este correo ya está registrado.", "warning")
+        return redirect(url_for('login'))
+
+    # 🔒 Validar colonia contra BD (SEGURIDAD)
+    # 🔒 Validar colonia contra BD (MÁS ROBUSTO)
+    cursor.execute("SELECT nombre FROM colonias WHERE LOWER(nombre)=LOWER(?)", (colonia,))
+    colonia_valida = cursor.fetchone()
+        
+
+    if not colonia_valida:
+        conn.close()
+        flash("Colonia inválida.", "danger")
+        return redirect(url_for('completar_registro'))
+
+    # 🔥 Insertar usuario
+    password_dummy = generate_password_hash("google_user")
+
+    cursor.execute("""
+    INSERT INTO usuarios (nombre, email, password, municipio, colonia, verificado)
+    VALUES (?, ?, ?, ?, ?, 1)
+    """, (nombre, correo, password_dummy, municipio, colonia))
+
+    conn.commit()
+
+    # 🔥 Obtener usuario recién creado
+    cursor.execute("SELECT * FROM usuarios WHERE email=?", (correo,))
+    usuario = cursor.fetchone()
+
+    conn.close()
+
+    # 🔥 Crear sesión automática
+    session['usuario_id'] = usuario[0]
+    session['usuario_nombre'] = usuario[1]
+    session['municipio'] = usuario[4]
+    session['usuario_colonia'] = usuario[5]
+
+    # 🧹 Limpiar datos de Google
+    session.pop("nombre", None)
+    session.pop("correo", None)
+
+    return redirect(url_for('mapa'))
 
 # VERIFICACIÓN --------------------------------------------------------------------------
 @app.route("/verificar/<token>")
@@ -412,6 +499,7 @@ def login():
         session['usuario_id'] = usuario[0]
         session['usuario_nombre'] = usuario[1]
         session['municipio'] = usuario[4]
+        session['usuario_colonia'] = usuario[5]
 
         if len(usuario) > 10:
             session['usuario_imagen'] = usuario[10]
@@ -652,13 +740,14 @@ def authorize():
     user = cursor.fetchone()
 
     if not user:
-        password_hash = generate_password_hash("GOOGLE_LOGIN")
-        cursor.execute("""
-            INSERT INTO usuarios 
-            (nombre, email, password, municipio, colonia, verificado)
-            VALUES (?, ?, ?, ?, ?, 1)
-        """, (nombre, email, password_hash, "garcia", "N/A"))
-        conn.commit()
+        # 🔥 GUARDAR DATOS EN SESSION (NO EN BD TODAVÍA)
+        session["nombre"] = nombre
+        session["correo"] = email
+
+        conn.close()
+
+        # 🔥 REDIRIGIR AL FORMULARIO
+        return redirect('/completar-registro')
 
     # Obtener usuario para sesión
     cursor.execute("SELECT * FROM usuarios WHERE email=?", (email,))
@@ -668,6 +757,7 @@ def authorize():
     session['usuario_id'] = usuario[0]
     session['usuario_nombre'] = usuario[1]
     session['municipio'] = usuario[4]
+    session['usuario_colonia'] = usuario[5]
 
     # manejar imagen de perfil (igual que login normal)
     if len(usuario) > 10:
@@ -678,50 +768,113 @@ def authorize():
     return redirect(url_for('mapa'))
 
 
-# CONTACTO-----------------------------------------------------------------------------------
+# CONTACTO FORMULARIO ----------------------------------------------------------------------
 @app.route('/contacto', methods=['GET', 'POST'])
 def contacto():
-
+    
     if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        email = request.form.get('email')
+        mensaje = request.form.get('mensaje')
 
-        nombre = escape(request.form.get('nombre', '').strip())
-        email = escape(request.form.get('email', '').strip())
-        mensaje = escape(request.form.get('mensaje', '').strip())
-
-
-        #  Validar campos vacíos
+        # Validación simple
         if not nombre or not email or not mensaje:
-            flash("Todos los campos son obligatorios.", "danger")
-            return redirect(url_for('contacto'))
+            flash("Todos los campos son obligatorios", "danger")
+            return redirect('/contacto')
 
+        conn = sqlite3.connect('database.db')  # ⚠ cambia por tu nombre real
+        cursor = conn.cursor()
 
-        #  Validar longitud nombre
-        if len(nombre) > 50:
-            flash("El nombre no puede exceder 50 caracteres.", "danger")
-            return redirect(url_for('contacto'))
+        cursor.execute("""
+            INSERT INTO contactos (nombre, email, mensaje)
+            VALUES (?, ?, ?)
+        """, (nombre, email, mensaje))
 
+        conn.commit()
+        conn.close()
 
-        #  Validar formato de email
-        email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-        if not re.match(email_regex, email) or len(email) > 100:
-            flash("Correo electrónico inválido.", "danger")
-            return redirect(url_for('contacto'))
-
-
-        #  Validar longitud mensaje
-        if len(mensaje) < 10 or len(mensaje) > 500:
-            flash("El mensaje debe tener entre 10 y 500 caracteres.", "danger")
-            return redirect(url_for('contacto'))
-
-
-        #  Si todo está correcto
-        flash("Mensaje enviado correctamente.", "success")
-        return redirect(url_for('contacto'))
+        flash("Mensaje enviado correctamente ✅", "success")
+        return redirect('/contacto')
 
     return render_template('contacto.html')
+# NOTIFICACIONES ----------------------------------------------------------------------
+from datetime import datetime
 
+# NOTIFICACIONES ----------------------------------------------------------------------
+@app.route('/notificaciones')
+def ver_notificaciones():
+    if 'usuario_id' not in session:
+        return redirect('/login')
 
+    municipio = session.get('municipio', '').lower()
 
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # 🔔 TRAER NOTIFICACIONES + FECHA
+    if session.get('rol') == 'admin':
+        cursor.execute("""
+            SELECT titulo, mensaje, GROUP_CONCAT(colonia) as colonias, MAX(fecha) as fecha
+            FROM notificaciones
+            GROUP BY titulo, mensaje
+            ORDER BY fecha DESC
+        """)
+    else:
+        cursor.execute("""
+            SELECT titulo, mensaje, GROUP_CONCAT(colonia) as colonias, MAX(fecha) as fecha
+            FROM notificaciones
+            WHERE LOWER(municipio)=?
+            GROUP BY titulo, mensaje
+            ORDER BY fecha DESC
+        """, (municipio,))
+
+    notificaciones = cursor.fetchall()
+
+    # ✅ FORMATEAR FECHAS AQUÍ 👇
+    notificaciones_formateadas = []
+
+    for n in notificaciones:
+        try:
+            fecha_obj = datetime.fromisoformat(n['fecha'])
+        except:
+            fecha_obj = datetime.strptime(n['fecha'], "%Y-%m-%d %H:%M:%S.%f")
+
+        fecha_formateada = fecha_obj.strftime("%d/%m/%Y %I:%M %p")
+
+        notificaciones_formateadas.append({
+            'titulo': n['titulo'],
+            'mensaje': n['mensaje'],
+            'colonias': n['colonias'],
+            'fecha': fecha_formateada
+        })
+
+    # 🔥 CONTADOR
+    if session.get('rol') == 'admin':
+        cursor.execute("""
+            SELECT COUNT(DISTINCT titulo || mensaje)
+            FROM notificaciones
+        """)
+    else:
+        cursor.execute("""
+            SELECT COUNT(DISTINCT titulo || mensaje)
+            FROM notificaciones
+            WHERE LOWER(municipio)=?
+        """, (municipio,))
+
+    total_notificaciones = cursor.fetchone()[0]
+
+    conn.close()
+
+    # ✅ MARCAR COMO VISTAS
+    session['notificaciones_vistas'] = total_notificaciones
+
+    # 🔁 IMPORTANTE: ahora mandamos las formateadas
+    return render_template(
+        'notificaciones.html',
+        notificaciones=notificaciones_formateadas,
+        total_notificaciones=total_notificaciones
+    )
 # SUBIR FOTO PERFIL ------------------------------------------------------------------------------
 
 @app.route('/subir_foto', methods=['POST'])
@@ -796,6 +949,166 @@ def logout():
 
 
 
+
+#================================================================================================================================================
+# ADMINISTRADOR  --------------------------------------------------------------------------------
+@app.route('/admin')
+def admin():
+        if 'rol' not in session or session['rol'].lower().strip() != 'admin':
+           return "Acceso restringido"
+        return render_template('admin/dashboard.html')
+
+# REGISTRO --------------------------------------------------------------------------------------
+
+def crear_admin_si_no_existe():
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    correo = "bluemap561@gmail.com"
+
+    cursor.execute("SELECT * FROM usuarios WHERE email=?", (correo,))
+    admin = cursor.fetchone()
+
+    if not admin:
+        password_hash = generate_password_hash("MapAD*1")
+
+        cursor.execute("""
+        INSERT INTO usuarios (nombre, email, password, municipio, colonia, verificado, rol)
+        VALUES (?, ?, ?, ?, ?, 1, 'admin')
+        """, ("Admin", correo, password_hash, "García", "Centro"))
+
+        conn.commit()
+        print("✅ Admin creado automáticamente")
+
+    conn.close()
+# SESION ADMIN------------------------------------------------------------------------------------
+
+@app.route('/admin_login', methods=['GET', 'POST'])
+def admin_login():
+
+    if request.method == 'POST':
+        correo = request.form.get('correo')
+        password = request.form.get('password')
+
+        conn = sqlite3.connect('database.db')
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT * FROM usuarios 
+            WHERE email=? AND rol='admin'
+        """, (correo,))
+
+        admin = cursor.fetchone()
+        conn.close()
+
+        if admin and check_password_hash(admin['password'], password):
+            session['rol'] = admin['rol']
+            session['usuario_id'] = admin['id']
+            session['usuario_nombre'] = admin['nombre']
+
+            return redirect('/admin')
+        else:
+            flash("Credenciales incorrectas", "danger")
+            return redirect('/admin_login')
+
+    # 🔥 ESTO FALTABA (GET)
+    return render_template('admin/login.html')
+# VER MENSAJES --------------------------------------------------------------------------------
+@app.route('/admin/mensajes')
+def admin_mensajes():
+    if session.get('rol') != 'admin':
+        return "Acceso restringido"
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT nombre, email, mensaje, fecha FROM contactos ORDER BY id DESC")
+    mensajes = cursor.fetchall()
+
+    conn.close()
+
+    return render_template('admin/mensajes.html', mensajes=mensajes)
+
+# NOTIFICACIONES ADMIN ----------------------------------------------------------------
+@app.route('/admin/notificaciones', methods=['GET', 'POST'])
+def admin_notificaciones():
+    if session.get('rol') != 'admin':
+        return "Acceso restringido"
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # 🔥 Obtener colonias SIEMPRE
+    cursor.execute("SELECT nombre FROM colonias")
+    colonias_db = cursor.fetchall()
+
+    if request.method == 'POST':
+        titulo = request.form.get('titulo')
+        mensaje = request.form.get('mensaje')
+        mensaje = mensaje.replace("\n", "<br>")
+
+        colonias = request.form.getlist('colonias[]')
+        municipio = request.form.get('municipio', '').lower().strip()
+
+        # 🚨 VALIDACIONES (ANTES DE INSERTAR)
+        if not municipio:
+            flash("Selecciona un municipio válido", "warning")
+            return render_template('admin/notificaciones.html', colonias=colonias_db)
+
+        if not colonias:
+            flash("Selecciona al menos una colonia", "warning")
+            return render_template('admin/notificaciones.html', colonias=colonias_db)
+
+        # 🔥 Si selecciona "todas"
+        if "todas" in colonias:
+            cursor.execute("SELECT nombre FROM colonias")
+            colonias = [c[0] for c in cursor.fetchall()]
+
+        fecha = datetime.now()  # 🔥 AQUÍ SE CREA
+
+        # 🔥 INSERT CORRECTO (UNO SOLO)
+        for col in colonias:
+            col = col.lower().strip()
+            cursor.execute("""
+                INSERT INTO notificaciones (titulo, mensaje, municipio, colonia, fecha)
+                VALUES (?, ?, ?, ?, ?)
+            """, (titulo, mensaje, municipio, col, fecha))
+
+        conn.commit()
+        flash("Notificación enviada ✅", "success")
+
+    conn.close()
+
+    return render_template('admin/notificaciones.html', colonias=colonias_db)
+#--------------------------------------------------------------------------------------
+@app.context_processor
+def inject_notificaciones():
+    if 'usuario_id' not in session:
+        return dict(nuevas_notificaciones=0)
+
+    municipio = session.get('municipio', '').lower()
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT COUNT(DISTINCT titulo || mensaje)
+        FROM notificaciones
+        WHERE LOWER(municipio)=?
+    """, (municipio,))
+
+    total = cursor.fetchone()[0]
+    conn.close()
+
+    vistas = session.get('notificaciones_vistas', 0)
+    nuevas = total - vistas
+
+    if nuevas < 0:
+        nuevas = 0
+
+    return dict(nuevas_notificaciones=nuevas)
 # EJECUCIÓN ------------------------------------------------------------------------------
 if __name__ == "__main__":
+    crear_admin_si_no_existe()
     app.run(host="0.0.0.0", port=5000, debug=True)
