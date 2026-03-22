@@ -4,17 +4,12 @@
 
 <h2>Mapa de suministro</h2>
 
-<input type="text" 
-       id="direccion" 
-       name="direccion"
-       placeholder="Escribe una dirección"
-       list="lista_colonias">
-
-<datalist id="lista_colonias">
+<select id="direccion" class="form-control mb-3">
+    <option value="">Selecciona una colonia</option>
     {% for colonia in colonias %}
-        <option value="{{ colonia[1] }}">
+        <option value="{{ colonia[1] }}">{{ colonia[1] }}</option>
     {% endfor %}
-</datalist>
+</select>
 
 <button onclick="buscar()">Buscar</button>
 
@@ -131,16 +126,16 @@ L.marker([25.808339792055715, -100.48101995797703], {icon: tinacoIcon})
     abrirStreetView(25.808339792055715, -100.48101995797703);
 });
 
-L.marker([25.797904225724558, -100.47557860643903], {icon: tinacoIcon})
+L.marker([25.797581047643362, -100.47536428924701], {icon: tinacoIcon})
 .addTo(map)
 .bindPopup("Tinaco público - Plaza 1 San Antonio")
 .on("click", function(){
-    abrirStreetView(25.797904225724558, -100.47557860643903);
+    abrirStreetView(25.797581047643362, -100.47536428924701);
 });
 
 L.marker([25.781065308161207, -100.48553678816481], {icon: tinacoIcon})
 .addTo(map)
-.bindPopup("Tinaco público - Av. Sta. Elena")
+.bindPopup("Tinaco público - Parque Canchas")
 .on("click", function(){
     abrirStreetView(25.781065308161207, -100.48553678816481);
 });
@@ -188,17 +183,17 @@ L.marker([25.786130077562166, -100.5879042579081], {icon: dispensadorIcon})
 });
 
 //Av. Hacienda del Sol
-L.marker([25.787462137244514, -100.56750493016676], {icon: dispensadorIcon})
+L.marker([25.787318232315098, -100.56740802631003], {icon: dispensadorIcon})
 .addTo(map)
-.bindPopup("Dispensador de agua - The Water House")
+.bindPopup("Dispensador de agua - Agua Purificada")
 .on("click", function(){
-    abrirStreetView(25.787462137244514, -100.56750493016676);
+    abrirStreetView(25.787318232315098, -100.56740802631003);
 });
 
 //Mineros
 L.marker([25.794893059358316, -100.491132703432], {icon: dispensadorIcon})
 .addTo(map)
-.bindPopup("Dispensador de agua - The Water House")
+.bindPopup("Dispensador de agua - Agua Lincoln")
 .on("click", function(){
     abrirStreetView(25.794893059358316, -100.491132703432);
 });
@@ -213,11 +208,11 @@ L.marker([25.790643874841738, -100.58895589393289], {icon: dispensadorIcon})
 });
 
 //Praderas de Galeana
-L.marker([25.780742476293387, -100.5953429108924], {icon: dispensadorIcon})
+L.marker([25.78054103542471, -100.59550046775752], {icon: dispensadorIcon})
 .addTo(map)
 .bindPopup("Dispensador de agua - The Water House")
 .on("click", function(){
-    abrirStreetView(25.780742476293387, -100.5953429108924);
+    abrirStreetView(25.78054103542471, -100.59550046775752);
 });
 
 //Hacienda San Miguel
@@ -228,18 +223,12 @@ L.marker([25.70176939007305, -100.50745968925021], {icon: dispensadorIcon})
     abrirStreetView(25.70176939007305, -100.50745968925021);
 });
 
-// Perimetral Ote.
-L.marker([25.69065128996179, -100.44387052168601], {icon: dispensadorIcon})
-.addTo(map)
-.bindPopup("Dispensador de agua - The Water House")
-.on("click", function(){
-    abrirStreetView(25.69065128996179, -100.44387052168601);
-});
+
 
 //Villa Napoles
 L.marker([25.820852215791966, -100.6179109825146], {icon: dispensadorIcon})
 .addTo(map)
-.bindPopup("Dispensador de agua - Agua purificada")
+.bindPopup("Dispensador de agua - Agua Purificada Napoles")
 .on("click", function(){
     abrirStreetView(25.820852215791966, -100.6179109825146);
 });
@@ -271,11 +260,11 @@ L.marker([25.78725254614831, -100.46459734691865], {icon: dispensadorIcon})
 
 //Av. Sta. Elena
 
-L.marker([25.784215287822235, -100.48555882996257], {icon: dispensadorIcon})
+L.marker([25.783707042492697, -100.48554945647844], {icon: dispensadorIcon})
 .addTo(map)
 .bindPopup("Dispensador de agua - The Water House")
 .on("click", function(){
-    abrirStreetView(25.784215287822235, -100.48555882996257);
+    abrirStreetView(25.783707042492697, -100.48554945647844);
 });
 
 

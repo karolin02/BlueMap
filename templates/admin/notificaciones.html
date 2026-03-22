@@ -2,6 +2,17 @@
 
 {% block contenido %}
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
 <h2 class="mb-3">Enviar Notificación</h2>
 
 <form method="POST">
@@ -45,4 +56,37 @@
 
 <a href="/admin" class="btn btn-secondary">⬅ Volver</a>
 
+<h3 class="mt-5">Notificaciones enviadas</h3>
+
+<table class="table table-bordered mt-3">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Mensaje</th>
+            <th>Fecha</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for n in notificaciones %}
+        <tr>
+            <td>{{ n[1] }}</td>
+            <td>{{ n[2]|safe }}</td>
+            <td>{{ n[3] }}</td>
+            <td>
+                <form method="POST" action="/admin/notificaciones/borrar/{{ n[0] }}" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <button class="btn btn-sm btn-danger"
+                        onclick="return confirm('¿Eliminar notificación?')">
+                        🗑️
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 {% endblock %}
+

@@ -90,6 +90,11 @@ def get_db_data():
     conn.close()
     return colonias, puntos
 
+def get_db_connection():
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
 
 
 # RUTAS PRINCIPALES ---------------------------------------------------------------------
@@ -101,6 +106,8 @@ def index():
 @app.route('/')
 def inicio():
     return render_template('index.html')
+
+
 # MAPA -----------------------------------------------------------------------------------
 @app.route("/mapa")
 def mapa():
@@ -111,7 +118,11 @@ def mapa():
     if session.get('municipio', '').lower().replace("í", "i") != "garcia":
         return "Acceso restringido"
 
-    return render_template("mapa.html")
+    conn = get_db_connection()
+    colonias = conn.execute("SELECT id, nombre FROM colonias").fetchall()
+    conn.close()
+
+    return render_template("mapa.html", colonias=colonias)  # 👈 AQUÍ ESTABA EL ERROR
 # API ----------------------------------------------------------------------------
 
 @app.route("/api/geocode")
@@ -1078,9 +1089,39 @@ def admin_notificaciones():
         conn.commit()
         flash("Notificación enviada ✅", "success")
 
+        conn.close()
+        return redirect(url_for('admin_notificaciones'))  
+    
+    cursor.execute("""
+        SELECT id, titulo, mensaje, fecha 
+        FROM notificaciones 
+        ORDER BY fecha DESC
+    """)
+    notificaciones = cursor.fetchall()
+
     conn.close()
 
-    return render_template('admin/notificaciones.html', colonias=colonias_db)
+    return render_template(
+        'admin/notificaciones.html',
+        colonias=colonias_db,
+        notificaciones=notificaciones)
+
+
+#--------------------------------------------------------------------------------------
+@app.route('/admin/notificaciones/borrar/<int:id>', methods=['POST'])
+def borrar_notificacion(id):
+    if session.get('rol') != 'admin':
+        return "Acceso restringido"
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM notificaciones WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+
+    flash("Notificación eliminada 🗑️", "success")
+    return redirect(url_for('admin_notificaciones'))
 #--------------------------------------------------------------------------------------
 @app.context_processor
 def inject_notificaciones():
