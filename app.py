@@ -169,7 +169,6 @@ def mapa():
 
 
 # API ----------------------------------------------------------------------------
-
 @app.route("/api/geocode")
 def geocode():
     direccion = request.args.get("direccion")
@@ -188,14 +187,17 @@ def geocode():
         response = requests.get(url, params=params, timeout=5)
         data = response.json()
 
-        print("STATUS GOOGLE:", data["status"])  
-        print("RESPUESTA COMPLETA:", data)    
+        print("STATUS GOOGLE:", data.get("status"))
+        print("RESPUESTA COMPLETA:", data)
 
         if response.status_code != 200:
             return {"error": "Error externo"}, 500
 
-        if data["status"] != "OK":
-            return {"error": "Dirección no encontrada"}, 404
+        if data.get("status") != "OK":
+            return {
+                "error": "Dirección no encontrada",
+                "google_status": data.get("status")
+            }, 404
 
         location = data["results"][0]["geometry"]["location"]
 
@@ -207,9 +209,9 @@ def geocode():
     except requests.exceptions.Timeout:
         return {"error": "Timeout externo"}, 504
 
-    except Exception:
+    except Exception as e:
+        print("ERROR:", e)
         return {"error": "Error interno"}, 500
-
 # CONTENIDO -----------------------------------------------------------------------
 @app.route("/ahorro")
 def ahorro():
@@ -1182,6 +1184,24 @@ def inject_notificaciones():
         nuevas = 0
 
     return dict(nuevas_notificaciones=nuevas)
+
+
+# 🔥 BORRAR NOTIFICACIÓN-------------------------------------------------------------------------------------------------------------------------
+@app.route('/admin/notificaciones/borrar/<int:id>', methods=['POST'])
+def borrar_notificacion(id):
+
+    if session.get('rol') != 'admin':
+        return "Acceso restringido"
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM notificaciones WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+
+    flash("Notificación eliminada 🗑️", "success")
+    return redirect(url_for('admin_notificaciones'))
 # EJECUCIÓN ------------------------------------------------------------------------------
 if __name__ == "__main__":
     crear_admin_si_no_existe()

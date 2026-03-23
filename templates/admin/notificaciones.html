@@ -18,9 +18,10 @@
 <form method="POST">
 
     <!-- MAPA -->
-    <div id="mapAdmin" style="height:400px; margin-bottom:15px;"></div>
+    <div id="mapAdmin" style="height:400px;"></div>
+    <br>
 
-    <!-- COORDENADAS AUTOMÁTICAS -->
+    <!-- COORDENADAS -->
     <input type="text" name="lat" id="lat" placeholder="Latitud" readonly class="form-control mb-2">
     <input type="text" name="lng" id="lng" placeholder="Longitud" readonly class="form-control mb-2">
 
@@ -84,7 +85,7 @@
             <td>{{ n[2]|safe }}</td>
             <td>{{ n[3] }}</td>
             <td>
-                <form method="POST" action="/admin/notificaciones/borrar/{{ n[0] }}" style="display:inline;">
+                <form method="POST" action="/admin/notificaciones/borrar/{{ n[0] }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     
                     <button class="btn btn-sm btn-danger"
@@ -98,14 +99,29 @@
     </tbody>
 </table>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+{% endblock %}
+
+
+{% block scripts %}
 
 <script>
-var mapAdmin = L.map('mapAdmin').setView([25.8, -100.55], 13);
+var boundsGarcia = [
+    [25.70, -100.70], // suroeste
+    [25.90, -100.40]  // noreste
+];
+
+var mapAdmin = L.map('mapAdmin', {
+    maxBounds: boundsGarcia,
+    maxBoundsViscosity: 1.0, // 🔥 evita que se salga
+    minZoom: 13,
+    maxZoom: 16
+}).setView([25.8, -100.55], 13);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(mapAdmin);
+
+// Ajustar vista al municipio
+mapAdmin.fitBounds(boundsGarcia);
 
 let marker;
 
@@ -132,4 +148,5 @@ mapAdmin.on('click', function(e) {
 
 
 {% endblock %}
+
 

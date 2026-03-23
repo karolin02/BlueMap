@@ -53,18 +53,40 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // 🔥 NOTIFICACIONES
 const notificaciones = {{ notificaciones | tojson }};
 
-notificaciones.forEach(n => {
-    if (n[3] && n[4]) {
-
-        const lat = parseFloat(n[3]);
-        const lng = parseFloat(n[4]);
-
-        L.marker([lat, lng])
-        .addTo(map)
-        .bindPopup(`<b>🚰 ${n[1]}</b><br>${n[2]}`);
-    }
+const iconoPipa = L.icon({
+    iconUrl: '/static/img/pipa.png',
+    iconSize: [80, 80]
 });
 
+notificaciones.forEach(n => {
+
+    if (n[2] && n[3]) {
+
+        const lat = parseFloat(n[2]);
+        const lng = parseFloat(n[3]);
+
+        L.marker([lat, lng], { icon: iconoPipa })
+        .addTo(map)
+        .bindPopup(`
+            <b>🚛 ${n[0]}</b><br>
+            ${n[1]}<br><br>
+
+            <iframe
+                width="250"
+                height="150"
+                style="border:0"
+                loading="lazy"
+                allowfullscreen
+                src="https://www.google.com/maps?q=${lat},${lng}&output=embed">
+            </iframe>
+        `)
+        .on("click", function(){
+            abrirStreetView(lat, lng);
+        });
+
+    }
+
+});
 
 
   
@@ -332,7 +354,7 @@ function buscar() {
         return;
     }
 
-    fetch(`/api/geocode?direccion=${encodeURIComponent(direccion)}`)
+    fetch(`/api/geocode?direccion=${encodeURIComponent(direccion + ", García, Nuevo León, México")}`)
         .then(res => {
             if (!res.ok) throw new Error("Dirección no encontrada");
             return res.json();
