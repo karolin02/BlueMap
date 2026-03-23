@@ -17,7 +17,7 @@ import requests
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 GOOGLE_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
-
+GOOGLE_FRONTEND_KEY = os.getenv("GOOGLE_GEOCODING_KEY")
 
 def validar_password(password):
     return (
@@ -146,7 +146,7 @@ def mapa():
         return "Acceso restringido"
 
     # 🔥 ESTO DEBE IR DENTRO
-    colonias = conn.execute("SELECT id, nombre FROM colonias").fetchall()
+    colonias = conn.execute("SELECT id, nombre, lat, lon FROM colonias").fetchall()
 
     notificaciones = conn.execute("""
         SELECT titulo, mensaje, lat, lng 
@@ -165,6 +165,8 @@ def mapa():
         colonias=colonias,
         notificaciones=notificaciones,
         google_api_key=GOOGLE_API_KEY
+
+
     )
 
 
@@ -212,6 +214,27 @@ def geocode():
     except Exception as e:
         print("ERROR:", e)
         return {"error": "Error interno"}, 500
+    
+#----------------------------------------------------------------------------------
+@app.route("/api/colonias")
+def obtener_colonias():
+    conn = sqlite3.connect("tu_bd.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT nombre, lat, lon FROM colonias")
+    datos = cursor.fetchall()
+
+    colonias = []
+    for c in datos:
+        colonias.append({
+            "nombre": c[0],
+            "lat": c[1],
+            "lng": c[2]
+        })
+
+    return jsonify(colonias)
+
+
 # CONTENIDO -----------------------------------------------------------------------
 @app.route("/ahorro")
 def ahorro():

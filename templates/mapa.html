@@ -7,13 +7,19 @@
 <select id="direccion" class="form-control mb-3">
     <option value="">Selecciona una colonia</option>
     {% for colonia in colonias %}
-        <option value="{{ colonia[1] }}">{{ colonia[1] }}</option>
+    <option 
+    value="{{ colonia[2] }},{{ colonia[3] }}">
+    {{ colonia[1] }}
+    </option>
     {% endfor %}
 </select>
 
 <button onclick="buscar()">Buscar</button>
 
 <div id="map" style="height:500px; margin-top:15px;"></div>
+
+
+
 <div id="streetview" style="height:400px; margin-top:20px;"></div>
 
 <!-- Leaflet CSS -->
@@ -23,8 +29,7 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-let map;
-let marcador;
+
 
 // límites exactos aproximados de García
 const garciaBounds = [
@@ -48,6 +53,8 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
     noWrap: true
 }).addTo(map);
+
+
 
 
 // 🔥 NOTIFICACIONES
@@ -310,18 +317,7 @@ L.marker([25.783707042492697, -100.48554945647844], {icon: dispensadorIcon})
 });
 
 
-
-
-
-
-
-
-
 let panorama;
-
-function initMap() {
-    console.log("Google Maps listo");
-}
 
 function abrirStreetView(lat, lng) {
 
@@ -344,50 +340,42 @@ function abrirStreetView(lat, lng) {
 }
 
 
-// búsqueda
+// 🔍 búsqueda corregida
+let marcador;
+
 function buscar() {
 
-    const direccion = document.getElementById("direccion").value;
+    const valor = document.getElementById("direccion").value;
 
-    if (!direccion) {
-        alert("Escribe una dirección");
+    if (!valor) {
+        alert("Selecciona una colonia");
         return;
     }
 
-    fetch(`/api/geocode?direccion=${encodeURIComponent(direccion + ", García, Nuevo León, México")}`)
-        .then(res => {
-            if (!res.ok) throw new Error("Dirección no encontrada");
-            return res.json();
-        })
-        .then(data => {
+    const [lat, lng] = valor.split(",").map(Number);
 
-            const lat = data.lat;
-            const lng = data.lng;
+    // quitar marcador anterior (Leaflet)
+    if (marcador) {
+        map.removeLayer(marcador);
+    }
 
-            if (marcador) {
-                map.removeLayer(marcador);
-            }
+    // crear marcador correcto
+    marcador = L.marker([lat, lng]).addTo(map);
 
-            marcador = L.marker([lat, lng]).addTo(map);
-
-            map.setView([lat, lng], 15);
-
-            // abrir street view automáticamente
-            abrirStreetView(lat, lng);
-
-        })
-        .catch(error => {
-            alert(error.message);
-        });
-
+    // mover mapa
+    map.setView([lat, lng], 15);
 }
-
-   
 </script>
+
+
+
 
 <script async defer 
 src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}">
+
 </script>
+
+
 
 <div class="card mt-4 shadow">
     <div class="card-body">
