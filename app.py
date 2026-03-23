@@ -18,6 +18,7 @@ import requests
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 GOOGLE_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
+
 def validar_password(password):
     return (
         len(password) >= 8 and
@@ -114,20 +115,59 @@ def mapa():
     if 'usuario_id' not in session:
         flash("Debes iniciar sesión.", "warning")
         return redirect(url_for('login'))
-    # 👑 ADMIN: acceso total
-    if session.get('rol') == 'admin':
-        return render_template("mapa.html")
-
-    # 👤 USUARIO: restringido por municipio
-    
-    if session.get('municipio', '').lower().replace("í", "i") != "garcia":
-        return "Acceso restringido"
 
     conn = get_db_connection()
+
+    # 👑 ADMIN
+    if session.get('rol') == 'admin':
+        colonias = conn.execute("SELECT id, nombre FROM colonias").fetchall()
+
+        notificaciones = conn.execute("""
+            SELECT titulo, mensaje, lat, lng 
+            FROM notificaciones
+        """).fetchall()
+
+        notificaciones = [
+            [n["titulo"], n["mensaje"], n["lat"], n["lng"]]
+            for n in notificaciones
+        ]
+
+        conn.close()
+        return render_template(
+        "mapa.html",
+        colonias=colonias,
+        notificaciones=notificaciones,
+        google_api_key=GOOGLE_API_KEY
+    )
+
+    # 👤 USUARIO
+    if session.get('municipio', '').lower().replace("í", "i") != "garcia":
+        conn.close()
+        return "Acceso restringido"
+
+    # 🔥 ESTO DEBE IR DENTRO
     colonias = conn.execute("SELECT id, nombre FROM colonias").fetchall()
+
+    notificaciones = conn.execute("""
+        SELECT titulo, mensaje, lat, lng 
+        FROM notificaciones
+    """).fetchall()
+
+    notificaciones = [
+        [n["titulo"], n["mensaje"], n["lat"], n["lng"]]
+        for n in notificaciones
+    ]
+
     conn.close()
 
-    return render_template("mapa.html", colonias=colonias)  # 👈 AQUÍ ESTABA EL ERROR
+    return render_template(
+        "mapa.html",
+        colonias=colonias,
+        notificaciones=notificaciones,
+        google_api_key=GOOGLE_API_KEY
+    )
+
+
 # API ----------------------------------------------------------------------------
 
 @app.route("/api/geocode")
@@ -1063,6 +1103,8 @@ def admin_notificaciones():
         titulo = request.form.get('titulo')
         mensaje = request.form.get('mensaje')
         mensaje = mensaje.replace("\n", "<br>")
+        lat = request.form.get('lat')
+        lng = request.form.get('lng')
 
         colonias = request.form.getlist('colonias[]')
         municipio = request.form.get('municipio', '').lower().strip()
@@ -1087,9 +1129,9 @@ def admin_notificaciones():
         for col in colonias:
             col = col.lower().strip()
             cursor.execute("""
-                INSERT INTO notificaciones (titulo, mensaje, municipio, colonia, fecha)
-                VALUES (?, ?, ?, ?, ?)
-            """, (titulo, mensaje, municipio, col, fecha))
+            INSERT INTO notificaciones (titulo, mensaje, municipio, colonia, fecha, lat, lng)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (titulo, mensaje, municipio, col, fecha, lat, lng))
 
         conn.commit()
         flash("Notificación enviada ✅", "success")
@@ -1112,21 +1154,7 @@ def admin_notificaciones():
         notificaciones=notificaciones)
 
 
-#--------------------------------------------------------------------------------------
-@app.route('/admin/notificaciones/borrar/<int:id>', methods=['POST'])
-def borrar_notificacion(id):
-    if session.get('rol') != 'admin':
-        return "Acceso restringido"
 
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    cursor.execute("DELETE FROM notificaciones WHERE id = ?", (id,))
-    conn.commit()
-    conn.close()
-
-    flash("Notificación eliminada 🗑️", "success")
-    return redirect(url_for('admin_notificaciones'))
 #--------------------------------------------------------------------------------------
 @app.context_processor
 def inject_notificaciones():

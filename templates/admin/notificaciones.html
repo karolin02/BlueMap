@@ -16,13 +16,23 @@
 <h2 class="mb-3">Enviar Notificación</h2>
 
 <form method="POST">
+
+    <!-- MAPA -->
+    <div id="mapAdmin" style="height:400px; margin-bottom:15px;"></div>
+
+    <!-- COORDENADAS AUTOMÁTICAS -->
+    <input type="text" name="lat" id="lat" placeholder="Latitud" readonly class="form-control mb-2">
+    <input type="text" name="lng" id="lng" placeholder="Longitud" readonly class="form-control mb-2">
+
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
+    <!-- TITULO -->
     <input class="form-control mb-2"
            name="titulo"
            placeholder="Título del aviso"
            required>
 
+    <!-- MENSAJE -->
     <textarea class="form-control mb-2"
               name="mensaje"
               placeholder="Mensaje (ej: corte de agua, pipas, etc.)"
@@ -87,6 +97,39 @@
         {% endfor %}
     </tbody>
 </table>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+var mapAdmin = L.map('mapAdmin').setView([25.8, -100.55], 13);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+.addTo(mapAdmin);
+
+let marker;
+
+mapAdmin.on('click', function(e) {
+
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+
+    document.getElementById("lat").value = lat;
+    document.getElementById("lng").value = lng;
+
+    if (marker) {
+        mapAdmin.removeLayer(marker);
+    }
+
+    marker = L.marker([lat, lng]).addTo(mapAdmin);
+});
+</script>
+
+
+
+
+
+
 
 {% endblock %}
 

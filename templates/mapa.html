@@ -43,12 +43,31 @@ map = L.map('map', {
 // ajustar vista al municipio
 map.fitBounds(garciaBounds);
 
-// cargar mapa
+// cargar mapa (SOLO UNA VEZ)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
     noWrap: true
 }).addTo(map);
 
+
+// 🔥 NOTIFICACIONES
+const notificaciones = {{ notificaciones | tojson }};
+
+notificaciones.forEach(n => {
+    if (n[3] && n[4]) {
+
+        const lat = parseFloat(n[3]);
+        const lng = parseFloat(n[4]);
+
+        L.marker([lat, lng])
+        .addTo(map)
+        .bindPopup(`<b>🚰 ${n[1]}</b><br>${n[2]}`);
+    }
+});
+
+
+
+  
 //Iconos 
 // ICONO TINACO
 var tinacoIcon = L.icon({
@@ -73,6 +92,7 @@ var dispensadorIcon = L.icon({
     iconAnchor: [17,35],
     popupAnchor: [0,-30]
 });
+
 
 //Tinacos 
 L.marker([25.799835054912286, -100.5869485070523], {icon: tinacoIcon})
@@ -277,7 +297,16 @@ L.marker([25.783707042492697, -100.48554945647844], {icon: dispensadorIcon})
 
 let panorama;
 
+function initMap() {
+    console.log("Google Maps listo");
+}
+
 function abrirStreetView(lat, lng) {
+
+    if (!window.google || !google.maps) {
+        alert("Google Maps aún no carga");
+        return;
+    }
 
     if (!panorama) {
         panorama = new google.maps.StreetViewPanorama(
@@ -328,11 +357,14 @@ function buscar() {
         .catch(error => {
             alert(error.message);
         });
+
 }
+
+   
 </script>
 
 <script async defer 
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD_1FVBa4Puss5MxDWFGuKXT1ONG738UGo&libraries=maps">
+src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}">
 </script>
 
 <div class="card mt-4 shadow">
