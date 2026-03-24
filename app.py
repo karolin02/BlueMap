@@ -1121,7 +1121,7 @@ def admin_notificaciones():
     cursor = conn.cursor()
 
     # 🔥 Obtener colonias SIEMPRE
-    cursor.execute("SELECT nombre FROM colonias")
+    cursor.execute("SELECT id, nombre, lat, lon FROM colonias")
     colonias_db = cursor.fetchall()
 
     if request.method == 'POST':
@@ -1165,9 +1165,9 @@ def admin_notificaciones():
         return redirect(url_for('admin_notificaciones'))  
     
     cursor.execute("""
-        SELECT id, titulo, mensaje, fecha 
-        FROM notificaciones 
-        ORDER BY fecha DESC
+    SELECT id, titulo, mensaje, municipio, colonia, fecha, lat, lng
+    FROM notificaciones 
+    ORDER BY fecha DESC
     """)
     notificaciones = cursor.fetchall()
 

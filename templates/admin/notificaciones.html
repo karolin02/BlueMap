@@ -15,6 +15,21 @@
 
 <h2 class="mb-3">Enviar Notificación</h2>
 
+<h5>🔍 Buscar colonia</h5>
+
+<select id="direccion" class="form-control mb-2" onchange="buscar()">
+    <option value="">Selecciona una colonia</option>
+    {% for c in colonias %}
+    <option value="{{ c[2] }},{{ c[3] }}">
+        {{ c[1] }}
+    </option>
+    {% endfor %}
+</select>
+
+<button onclick="buscar()" class="btn btn-primary mb-3">
+    Buscar
+</button>
+
 <form method="POST">
 
     <!-- MAPA -->
@@ -49,7 +64,7 @@
     <select name="colonias[]" class="form-control mb-3" multiple size="6" required>
         <option value="todas">Todas las colonias</option>
         {% for c in colonias %}
-            <option value="{{ c[0] }}">{{ c[0] }}</option>
+            <option value="{{ c[1] }}">{{ c[1] }}</option>
         {% endfor %}
     </select>
 
@@ -74,17 +89,25 @@
         <tr>
             <th>Título</th>
             <th>Mensaje</th>
+            <th>Municipio</th>
+            <th>Colonia</th>
             <th>Fecha</th>
+            <th>Latitud</th>
+            <th>Longitud</th>
             <th>Acción</th>
         </tr>
     </thead>
     <tbody>
         {% for n in notificaciones %}
         <tr>
-            <td>{{ n[1] }}</td>
-            <td>{{ n[2]|safe }}</td>
-            <td>{{ n[3] }}</td>
-            <td>
+          <td>{{ n[1] }}</td>
+          <td>{{ n[2]|safe }}</td>
+          <td>{{ n[3] }}</td> <!-- municipio -->
+          <td>{{ n[4] }}</td> <!-- colonia -->
+          <td>{{ n[5] }}</td> <!-- fecha -->
+          <td>{{ n[6] }}</td> <!-- lat -->
+          <td>{{ n[7] }}</td> <!-- lng -->
+          <td>
                 <form method="POST" action="/admin/notificaciones/borrar/{{ n[0] }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     
@@ -141,7 +164,33 @@ mapAdmin.on('click', function(e) {
 });
 </script>
 
+<script>
+function buscar() {
 
+    const valor = document.getElementById("direccion").value;
+
+    if (!valor) {
+        alert("Selecciona una colonia");
+        return;
+    }
+
+    const [lat, lng] = valor.split(",").map(Number);
+
+    // mover mapa
+    mapAdmin.setView([lat, lng], 15);
+
+    // poner marcador
+    if (marker) {
+        mapAdmin.removeLayer(marker);
+    }
+
+    marker = L.marker([lat, lng]).addTo(mapAdmin);
+
+    // 🔥 llenar inputs automáticamente
+    document.getElementById("lat").value = lat;
+    document.getElementById("lng").value = lng;
+}
+</script>
 
 
 
