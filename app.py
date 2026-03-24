@@ -35,9 +35,9 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # CONFIGURACIÓN SEGURA DE COOKIES DE SESIÓN-----------------------------------------------
-app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SECURE'] = False
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_PERMANENT'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 app.config['PREFERRED_URL_SCHEME'] = 'https'
@@ -585,6 +585,7 @@ def login():
         session['usuario_nombre'] = usuario[1]
         session['municipio'] = usuario[4]
         session['usuario_colonia'] = usuario[5]
+        session['rol'] = usuario[12] if len(usuario) > 12 else 'usuario'
 
         if len(usuario) > 10:
             session['usuario_imagen'] = usuario[10]
