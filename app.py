@@ -590,7 +590,7 @@ def login():
         if len(usuario) > 10:
             session['usuario_imagen'] = usuario[10]
         else:
-            session['usuario_imagen'] = None
+            session['usuario_imagen'] = None 
 
 
         # Protección contra Open Redirect
