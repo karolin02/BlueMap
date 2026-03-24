@@ -108,7 +108,9 @@ def index():
     return render_template("index.html")
 
 
-
+@app.route('/')
+def inicio():
+    return render_template('index.html')
 
 
 
