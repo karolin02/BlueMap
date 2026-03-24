@@ -915,6 +915,8 @@ def ver_notificaciones():
     # ✅ FORMATEAR FECHAS AQUÍ 👇
     notificaciones_formateadas = []
 
+    colonia_usuario = session.get('usuario_colonia', '').lower().strip()
+
     for n in notificaciones:
         try:
             fecha_obj = datetime.fromisoformat(n['fecha'])
@@ -923,11 +925,18 @@ def ver_notificaciones():
 
         fecha_formateada = fecha_obj.strftime("%d/%m/%Y %I:%M %p")
 
+        # 🔥 convertir colonias a lista
+        colonias_lista = n['colonias'].lower().split(",")
+
+        # 🔥 verificar si coincide con el usuario
+        coincide = colonia_usuario in colonias_lista
+
         notificaciones_formateadas.append({
             'titulo': n['titulo'],
             'mensaje': n['mensaje'],
             'colonias': n['colonias'],
-            'fecha': fecha_formateada
+            'fecha': fecha_formateada,
+            'coincide': coincide
         })
 
     # 🔥 CONTADOR
