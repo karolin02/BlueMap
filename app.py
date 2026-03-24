@@ -31,12 +31,16 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_key")
 csrf = CSRFProtect(app)
 
-
+from werkzeug.middleware.proxy_fix import ProxyFix
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # CONFIGURACIÓN SEGURA DE COOKIES DE SESIÓN-----------------------------------------------
-app.config['SESSION_COOKIE_SECURE'] = not app.debug
+app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_PERMANENT'] = True
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
+app.config['PREFERRED_URL_SCHEME'] = 'https'
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "database.db")
@@ -104,9 +108,8 @@ def index():
     return render_template("index.html")
 
 
-@app.route('/')
-def inicio():
-    return render_template('index.html')
+
+
 
 
 # MAPA -----------------------------------------------------------------------------------
@@ -216,9 +219,10 @@ def geocode():
         return {"error": "Error interno"}, 500
     
 #----------------------------------------------------------------------------------
+from flask import jsonify
 @app.route("/api/colonias")
 def obtener_colonias():
-    conn = sqlite3.connect("tu_bd.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     cursor.execute("SELECT nombre, lat, lon FROM colonias")
