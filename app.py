@@ -76,6 +76,8 @@ app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'bluemap561@gmail.com'  # correo
 app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
 app.config['MAIL_DEFAULT_SENDER'] = 'bluemap561@gmail.com'
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_DEBUG'] = True
 
 
 mail = Mail(app)
@@ -737,6 +739,7 @@ def recuperar():
 
             try:
                 mail.send(msg)
+                print("Correo enviado correctamente")
             except Exception as e:
                 print("Error enviando correo:", e)
 
