@@ -604,7 +604,16 @@ def login():
         return redirect(url_for("mapa"))
 
     return render_template("login.html")
+#-----------------------------------------------------------------------------------------
+import threading
 
+def enviar_correo_async(app, msg):
+    with app.app_context():
+        try:
+            mail.send(msg)
+            print("Correo enviado correctamente")
+        except Exception as e:
+            print("Error enviando correo:", e)
 
 
 # RECUPERAR CONTRASEÑA --------------------------------------------------------------------
@@ -736,21 +745,21 @@ def recuperar():
             </body>
             </html>
             """
+        threading.Thread(target=enviar_correo_async, args=(app, msg)).start()
 
-            try:
-                mail.send(msg)
-                print("Correo enviado correctamente")
-            except Exception as e:
-                print("Error enviando correo:", e)
+
+
 
         conn.close()
 
 
-        # Mensaje genérico para evitar enumeración de usuarios
+
         flash("Si el correo existe, recibirás un enlace de recuperación.", "info")
         return redirect(url_for('login'))
 
     return render_template('recuperar.html')
+
+        
 
 
 
