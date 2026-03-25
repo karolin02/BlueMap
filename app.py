@@ -7,7 +7,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import re
 from datetime import datetime, timedelta
 import secrets
-from flask_mail import Mail, Message
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 from authlib.integrations.flask_client import OAuth
 from markupsafe import escape
 from werkzeug.utils import secure_filename
@@ -15,9 +16,12 @@ from flask_wtf.csrf import CSRFProtect
 from dotenv import load_dotenv
 import requests
 
+
+
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 GOOGLE_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 GOOGLE_FRONTEND_KEY = os.getenv("GOOGLE_GEOCODING_KEY")
+sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
 
 def validar_password(password):
     return (
@@ -67,20 +71,25 @@ google = oauth.register(
     }
 )
 
+# validar_password----------------------------------------------------------------------------
+def enviar_correo_sendgrid(destino, asunto, contenido_html):
+    mensaje = Mail(
+        from_email='bluemap561@gmail.com',
+        to_emails=destino,
+        subject=asunto,
+        html_content=contenido_html
+    )
 
+    try:
+        print("API KEY:", os.environ.get('SENDGRID_API_KEY'))
+        sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+        response = sg.send(mensaje)
+        print("✅ Status:", response.status_code)
+        return True
+    except Exception as e:
+        print("❌ Error SendGrid:", e)
+        return False
 
-# CONFIG CORREO ---------------------------------------------------------------------
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'bluemap561@gmail.com'  # correo
-app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
-app.config['MAIL_DEFAULT_SENDER'] = 'bluemap561@gmail.com'
-app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_DEBUG'] = True
-
-
-mail = Mail(app)
 
 
 # DB MAPA ------------------------------------------------------------------------------
@@ -329,14 +338,8 @@ def register():
         # Link dinámico correcto
         link_verificacion = url_for('verificar', token=token, _external=True)
 
-        msg = Message(
-            'Confirma tu cuenta',
-            recipients=[email]
-        )
-
-        msg.body = f"Verifica tu cuenta aquí: {link_verificacion}"
-
-        msg.html = f"""
+       
+        html = f"""
         <!DOCTYPE html>
         <html>
         <body style="margin:0; padding:0; background-color:#f4f6f9; font-family:Arial, sans-serif;">
@@ -411,11 +414,13 @@ def register():
         </html>
         """
 
-        try:
-            mail.send(msg)
-        except Exception as e:
-            print("Error enviando correo:", e)
+        enviar_correo_sendgrid(
+        email,
+        "Confirma tu cuenta",
+        html
+    )
 
+      
         flash("Registro exitoso. Revisa tu correo para verificar tu cuenta.", "success")
         return redirect(url_for("login"))
 
@@ -605,16 +610,7 @@ def login():
 
     return render_template("login.html")
 #-----------------------------------------------------------------------------------------
-import threading
 
-def enviar_correo_async(app, msg):
-    with app.app_context():
-        try:
-            print("🔥 INTENTANDO ENVIAR CORREO")
-            mail.send(msg)
-            print("Correo enviado correctamente")
-        except Exception as e:
-            print("Error enviando correo:", e)
 
 
 # RECUPERAR CONTRASEÑA --------------------------------------------------------------------
@@ -658,14 +654,7 @@ def recuperar():
 
             link = url_for('reset_password', token=token, _external=True)
 
-            msg = Message(
-                'Recuperación de contraseña - BlueMap 💧',
-                recipients=[email]
-            )
-
-            msg.body = f"Recupera tu contraseña aquí: {link}"
-
-            msg.html = f"""
+            html = f"""
             <!DOCTYPE html>
             <html>
             <body style="margin:0; padding:0; background-color:#f4f6f9; font-family:Arial, sans-serif;">
@@ -746,7 +735,11 @@ def recuperar():
             </body>
             </html>
             """
-            threading.Thread(target=enviar_correo_async, args=(app, msg)).start()
+            enviar_correo_sendgrid(
+                email,
+                "Recuperación de contraseña - BlueMap 💧",
+                html
+        )
 
 
 
