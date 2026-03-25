@@ -610,6 +610,7 @@ import threading
 def enviar_correo_async(app, msg):
     with app.app_context():
         try:
+            print("🔥 INTENTANDO ENVIAR CORREO")
             mail.send(msg)
             print("Correo enviado correctamente")
         except Exception as e:
