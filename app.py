@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-import sqlite3
-import psycopg2
 
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import sqlite3
 
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -1083,7 +1084,7 @@ def ver_notificaciones():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # 🔔 TRAER NOTIFICACIONES + FECHA
+
     if session.get('rol') == 'admin':
         cursor.execute("""
             SELECT titulo, mensaje, STRING_AGG(colonia, ',') as colonias, MAX(fecha) as fecha
@@ -1102,23 +1103,26 @@ def ver_notificaciones():
 
     notificaciones = cursor.fetchall()
 
-    # ✅ FORMATEAR FECHAS AQUÍ 👇
-    notificaciones_formateadas = []
 
+
+
+    notificaciones_formateadas = []
     colonia_usuario = session.get('usuario_colonia', '').lower().strip()
 
     for n in notificaciones:
-        try:
-            fecha_obj = datetime.fromisoformat(n['fecha'])
-        except:
-            fecha_obj = datetime.strptime(n['fecha'], "%Y-%m-%d %H:%M:%S.%f")
+        fecha_valor = n['fecha']
+
+        if isinstance(fecha_valor, str):
+            try:
+                fecha_obj = datetime.fromisoformat(fecha_valor)
+            except:
+                fecha_obj = datetime.strptime(fecha_valor, "%Y-%m-%d %H:%M:%S.%f")
+        else:
+            fecha_obj = fecha_valor
 
         fecha_formateada = fecha_obj.strftime("%d/%m/%Y %I:%M %p")
 
-        # 🔥 convertir colonias a lista
-        colonias_lista = n['colonias'].lower().split(",")
-
-        # 🔥 verificar si coincide con el usuario
+        colonias_lista = [c.strip() for c in n['colonias'].lower().split(",")]
         coincide = colonia_usuario in colonias_lista
 
         notificaciones_formateadas.append({
@@ -1129,28 +1133,31 @@ def ver_notificaciones():
             'coincide': coincide
         })
 
-    # 🔥 CONTADOR
+    # 🔔 CONTADOR
     if session.get('rol') == 'admin':
         cursor.execute("""
-            SELECT COUNT(DISTINCT titulo || mensaje)
-            FROM notificaciones
+            SELECT COUNT(*) AS total FROM (
+                SELECT DISTINCT titulo, mensaje
+                FROM notificaciones
+            ) t
         """)
     else:
         cursor.execute("""
-            SELECT COUNT(DISTINCT titulo || mensaje)
-            FROM notificaciones
-            WHERE LOWER(municipio)=%s
+            SELECT COUNT(*) AS total FROM (
+                SELECT DISTINCT titulo, mensaje
+                FROM notificaciones
+                WHERE LOWER(municipio)=%s
+            ) t
         """, (municipio,))
 
-    
-    total_notificaciones = cursor.fetchone()["count"]
+    total_notificaciones = cursor.fetchone()["total"]
 
     conn.close()
 
-    # ✅ MARCAR COMO VISTAS
+
     session['notificaciones_vistas'] = total_notificaciones
 
-    # 🔁 IMPORTANTE: ahora mandamos las formateadas
+
     return render_template(
         'notificaciones.html',
         notificaciones=notificaciones_formateadas,
@@ -1389,8 +1396,10 @@ def inject_notificaciones():
     municipio = session.get('municipio', '').lower()
 
     conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
+
+
+    cursor = conn.cursor()
     cursor.execute("""
         SELECT COUNT(DISTINCT titulo || mensaje) AS total
         FROM notificaciones
