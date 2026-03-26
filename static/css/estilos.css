@@ -175,10 +175,17 @@ footer {
         height:auto;
     }
 
+    /* IMAGEN CUIDADO DEL AGUA */
+    .cuidado-img{
+        width:100%;
+        max-width:500px;
+        height:auto;
+    }
+
     /* ===== IMÁGENES RESPONSIVE ===== */
     .pipa-img {
         width: 100%;
-        max-width: 220px;
+        max-width: 40px;
         margin: 0 auto;
         display: block;
     }
