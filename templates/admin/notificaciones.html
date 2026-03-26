@@ -20,8 +20,9 @@
 <select id="direccion" class="form-control mb-2" onchange="buscar()">
     <option value="">Selecciona una colonia</option>
     {% for c in colonias %}
-    <option value="{{ c.lat }},{{ c.lng }}">
-    {{ c.nombre }}
+    <!-- 🔥 CORREGIDO: lon en lugar de lng -->
+    <option value="{{ c.lat }},{{ c.lon }}">
+        {{ c.nombre }}
     </option>
     {% endfor %}
 </select>
@@ -100,15 +101,16 @@
     <tbody>
         {% for n in notificaciones %}
         <tr>
-          <td>{{ n[1] }}</td>
-          <td>{{ n[2]|safe }}</td>
-          <td>{{ n[3] }}</td> <!-- municipio -->
-          <td>{{ n[4] }}</td> <!-- colonia -->
-          <td>{{ n[5] }}</td> <!-- fecha -->
-          <td>{{ n[6] }}</td> <!-- lat -->
-          <td>{{ n[7] }}</td> <!-- lng -->
+          <!-- 🔥 CORREGIDO: usar diccionario -->
+          <td>{{ n.titulo }}</td>
+          <td>{{ n.mensaje|safe }}</td>
+          <td>{{ n.municipio }}</td>
+          <td>{{ n.colonia }}</td>
+          <td>{{ n.fecha }}</td>
+          <td>{{ n.lat }}</td>
+          <td>{{ n.lng }}</td>
           <td>
-                <form method="POST" action="/admin/notificaciones/borrar/{{ n[0] }}">
+                <form method="POST" action="/admin/notificaciones/borrar/{{ n.id }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     
                     <button class="btn btn-sm btn-danger"
@@ -129,13 +131,13 @@
 
 <script>
 var boundsGarcia = [
-    [25.70, -100.70], // suroeste
-    [25.90, -100.40]  // noreste
+    [25.70, -100.70],
+    [25.90, -100.40]
 ];
 
 var mapAdmin = L.map('mapAdmin', {
     maxBounds: boundsGarcia,
-    maxBoundsViscosity: 1.0, // 🔥 evita que se salga
+    maxBoundsViscosity: 1.0,
     minZoom: 13,
     maxZoom: 16
 }).setView([25.8, -100.55], 13);
@@ -143,7 +145,7 @@ var mapAdmin = L.map('mapAdmin', {
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(mapAdmin);
 
-// Ajustar vista al municipio
+
 mapAdmin.fitBounds(boundsGarcia);
 
 let marker;
@@ -176,21 +178,23 @@ function buscar() {
 
     const [lat, lng] = valor.split(",").map(Number);
 
-    // mover mapa
+
     mapAdmin.setView([lat, lng], 15);
 
-    // poner marcador
+
     if (marker) {
         mapAdmin.removeLayer(marker);
     }
 
     marker = L.marker([lat, lng]).addTo(mapAdmin);
 
-    // 🔥 llenar inputs automáticamente
+
     document.getElementById("lat").value = lat;
     document.getElementById("lng").value = lng;
 }
+
 </script>
+
 
 
 

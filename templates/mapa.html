@@ -7,9 +7,9 @@
 <select id="direccion" class="form-control mb-3">
     <option value="">Selecciona una colonia</option>
     {% for colonia in colonias %}
-    <option 
-    value="{{ colonia.lat }},{{ colonia.lng }}">
-    {{ colonia.nombre }}
+    <!-- 🔥 CORREGIDO: lon -->
+    <option value="{{ colonia.lat }},{{ colonia.lon }}">
+        {{ colonia.nombre }}
     </option>
     {% endfor %}
 </select>
@@ -18,26 +18,19 @@
 
 <div id="map" style="height:500px; margin-top:15px;"></div>
 
-
-
 <div id="streetview" style="height:400px; margin-top:20px;"></div>
 
-<!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
 
-
-// límites exactos aproximados de García
+// límites García
 const garciaBounds = [
-    [25.70, -100.75], // suroeste
-    [25.92, -100.45]  // noreste
+    [25.70, -100.75],
+    [25.92, -100.45]
 ];
 
-// crear mapa
 map = L.map('map', {
     maxBounds: garciaBounds,
     maxBoundsViscosity: 1.0,
@@ -45,19 +38,14 @@ map = L.map('map', {
     maxZoom: 18
 });
 
-// ajustar vista al municipio
 map.fitBounds(garciaBounds);
 
-// cargar mapa (SOLO UNA VEZ)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
     noWrap: true
 }).addTo(map);
 
 
-
-
-// 🔥 NOTIFICACIONES
+// 🔥 NOTIFICACIONES (compatible con dict o lista)
 const notificaciones = {{ notificaciones | tojson }};
 
 const iconoPipa = L.icon({
@@ -67,16 +55,19 @@ const iconoPipa = L.icon({
 
 notificaciones.forEach(n => {
 
-    if (n[2] && n[3]) {
+    // 🔥 soporte dict (PostgreSQL)
+    const lat = parseFloat(n.lat || n[2]);
+    const lng = parseFloat(n.lng || n[3]);
+    const titulo = n.titulo || n[0];
+    const mensaje = n.mensaje || n[1];
 
-        const lat = parseFloat(n[2]);
-        const lng = parseFloat(n[3]);
+    if (lat && lng) {
 
         L.marker([lat, lng], { icon: iconoPipa })
         .addTo(map)
         .bindPopup(`
-            <b>🚛 ${n[0]}</b><br>
-            ${n[1]}<br><br>
+            <b>🚛 ${titulo}</b><br>
+            ${mensaje}<br><br>
 
             <iframe
                 width="250"
@@ -317,6 +308,8 @@ L.marker([25.783707042492697, -100.48554945647844], {icon: dispensadorIcon})
 });
 
 
+
+// STREET VIEW
 let panorama;
 
 function abrirStreetView(lat, lng) {
@@ -340,7 +333,7 @@ function abrirStreetView(lat, lng) {
 }
 
 
-// 🔍 búsqueda corregida
+// BUSCAR
 let marcador;
 
 function buscar() {
@@ -354,17 +347,19 @@ function buscar() {
 
     const [lat, lng] = valor.split(",").map(Number);
 
-    // quitar marcador anterior (Leaflet)
+    
     if (marcador) {
         map.removeLayer(marcador);
     }
 
-    // crear marcador correcto
+
     marcador = L.marker([lat, lng]).addTo(map);
 
-    // mover mapa
+
     map.setView([lat, lng], 15);
 }
+
+
 </script>
 
 
@@ -374,6 +369,7 @@ function buscar() {
 src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}">
 
 </script>
+
 
 
 
