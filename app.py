@@ -1391,12 +1391,13 @@ def inject_notificaciones():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT COUNT(DISTINCT titulo || mensaje)
+    SELECT COUNT(DISTINCT titulo || mensaje) AS total
         FROM notificaciones
         WHERE LOWER(municipio)=%s
     """, (municipio,))
 
-    total = cursor.fetchone()[0]
+    
+    total = cursor.fetchone()["count"]
     conn.close()
 
     vistas = session.get('notificaciones_vistas', 0)
