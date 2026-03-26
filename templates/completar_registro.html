@@ -22,10 +22,10 @@
 
   <!-- Colonia -->
   <select name="colonia" class="form-control mb-3" required>
-    <option value="">Selecciona tu colonia</option>
-   {% for c in colonias %}
-  <option value="{{ c[0] }}">{{ c[0] }}</option>
-{% endfor %}
+  <option value="">Selecciona tu colonia</option>
+  {% for c in colonias %}
+    <option value="{{ c.nombre }}">{{ c.nombre }}</option>
+  {% endfor %}
   </select>
 
   <button class="btn btn-primary">Guardar</button>

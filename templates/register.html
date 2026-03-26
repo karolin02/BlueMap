@@ -79,18 +79,14 @@
                     <option value="garcia">García</option>
                 </select>
 
-                <input class="form-control mb-3"
-                    name="colonia"
-                    placeholder="Colonia"
-                    required
-                    maxlength="100"
-                    list="lista_colonias">
+            
 
-                <datalist id="lista_colonias">
+                <select class="form-control mb-3" name="colonia" required>
+                    <option value="">Selecciona tu colonia</option>
                     {% for colonia in colonias %}
-                        <option value="{{ colonia[1] }}">
+                        <option value="{{ colonia.nombre }}">{{ colonia.nombre }}</option>
                     {% endfor %}
-                </datalist>
+                </select>
                 <!-- Checkbox de términos -->
                 <div class="form-check mb-3">
                     <input class="form-check-input" type="checkbox" id="acepto" name="acepto" required>

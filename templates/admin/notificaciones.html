@@ -18,10 +18,10 @@
 <h5>🔍 Buscar colonia</h5>
 
 <select id="direccion" class="form-control mb-2" onchange="buscar()">
-    <option value="">Selecciona una colonia</option>
+    <option value="{{ c.nombre }}">Selecciona una colonia</option>
     {% for c in colonias %}
-    <option value="{{ c[2] }},{{ c[3] }}">
-        {{ c[1] }}
+    <option value="{{ c.lat }},{{ c.lng }}">
+    {{ c.nombre }}
     </option>
     {% endfor %}
 </select>
@@ -64,7 +64,7 @@
     <select name="colonias[]" class="form-control mb-3" multiple size="6" required>
         <option value="todas">Todas las colonias</option>
         {% for c in colonias %}
-            <option value="{{ c[1] }}">{{ c[1] }}</option>
+            <option value="{{ c.nombre }}">{{ c.nombre }}</option>
         {% endfor %}
     </select>
 

@@ -8,8 +8,8 @@
     <option value="">Selecciona una colonia</option>
     {% for colonia in colonias %}
     <option 
-    value="{{ colonia[2] }},{{ colonia[3] }}">
-    {{ colonia[1] }}
+    value="{{ colonia.lat }},{{ colonia.lng }}">
+    {{ colonia.nombre }}
     </option>
     {% endfor %}
 </select>
