@@ -1334,13 +1334,22 @@ def admin_notificaciones():
         titulo = request.form.get('titulo')
         mensaje = request.form.get('mensaje')
         mensaje = mensaje.replace("\n", "<br>")
-        lat = request.form.get('lat')
-        lng = request.form.get('lng')
+
+        lat = request.form.get('lat', '').strip()
+        lng = request.form.get('lng', '').strip()
+
+        # 🔥 VALIDAR Y CONVERTIR
+        try:
+            lat = float(lat) if lat else None
+            lng = float(lng) if lng else None
+        except ValueError:
+            flash("Latitud o longitud inválidas", "danger")
+            return render_template('admin/notificaciones.html', colonias=colonias_db)
 
         colonias = request.form.getlist('colonias[]')
         municipio = request.form.get('municipio', '').lower().strip()
 
-        # 🚨 VALIDACIONES (ANTES DE INSERTAR)
+        # 🚨 VALIDACIONES
         if not municipio:
             flash("Selecciona un municipio válido", "warning")
             return render_template('admin/notificaciones.html', colonias=colonias_db)
@@ -1354,26 +1363,29 @@ def admin_notificaciones():
             cursor.execute("SELECT nombre FROM colonias")
             colonias = [c[0] for c in cursor.fetchall()]
 
-        fecha = datetime.now()  # 🔥 AQUÍ SE CREA
+        fecha = datetime.now()
 
-        # 🔥 INSERT CORRECTO (UNO SOLO)
+        # 🔥 INSERT
         for col in colonias:
             col = col.lower().strip()
             cursor.execute("""
-            INSERT INTO notificaciones (titulo, mensaje, municipio, colonia, fecha, lat, lng)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO notificaciones (titulo, mensaje, municipio, colonia, fecha, lat, lng)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
             """, (titulo, mensaje, municipio, col, fecha, lat, lng))
 
         conn.commit()
-        flash("Notificación enviada ✅", "success")
-
+        
         conn.close()
-        return redirect(url_for('admin_notificaciones'))  
-    
+
+
+        flash("Notificación enviada ✅", "success")
+        return redirect(url_for('admin_notificaciones'))
+
+    # 🔥 GET (mostrar datos)
     cursor.execute("""
-    SELECT id, titulo, mensaje, municipio, colonia, fecha, lat, lng
-    FROM notificaciones 
-    ORDER BY fecha DESC
+        SELECT id, titulo, mensaje, municipio, colonia, fecha, lat, lng
+        FROM notificaciones 
+        ORDER BY fecha DESC
     """)
     notificaciones = cursor.fetchall()
 
@@ -1382,10 +1394,8 @@ def admin_notificaciones():
     return render_template(
         'admin/notificaciones.html',
         colonias=colonias_db,
-        notificaciones=notificaciones)
-
-
-
+        notificaciones=notificaciones
+    )
 #--------------------------------------------------------------------------------------
 
 @app.context_processor
