@@ -140,7 +140,7 @@ def init_db():
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS colonias (
-        id INTEGER PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         nombre TEXT,
         lat REAL,
         lon REAL,
@@ -493,7 +493,7 @@ def register():
             cursor.execute("""
             INSERT INTO usuarios 
             (nombre, email, password, municipio, colonia, verificado, token_verificacion)
-            VALUES (%s, %s, %s, %s, %s, 0, %s)
+            VALUES (%s, %s, %s, %s, %s, FALSE, %s)
             """, (nombre, email, password_hash, municipio, colonia, token))
 
             conn.commit()
@@ -675,7 +675,7 @@ def guardar_usuario():
 
     cursor.execute("""
     INSERT INTO usuarios (nombre, email, password, municipio, colonia, verificado)
-    VALUES (%s, %s, %s, %s, %s, 1)
+    VALUES (%s, %s, %s, %s, %s, TRUE)
     """, (nombre, correo, password_dummy, municipio, colonia))
 
     conn.commit()
@@ -715,7 +715,7 @@ def verificar(token):
 
     cursor.execute("""
         UPDATE usuarios
-        SET verificado = 1,
+        SET verificado = TRUE,
             token_verificacion = NULL
        WHERE id = %s
 """, (usuario["id"],))
@@ -765,7 +765,7 @@ def login():
 
 
         # Verificar cuenta confirmada
-        if usuario["verificado"] == 0:
+        if usuario["verificado"] == False:
             flash("Debes verificar tu correo antes de iniciar sesión.", "warning")
             return redirect(url_for("login"))
 
