@@ -1317,6 +1317,7 @@ def admin_mensajes():
 
     return render_template('admin/mensajes.html', mensajes=mensajes)
 
+
 # NOTIFICACIONES ADMIN ----------------------------------------------------------------
 @app.route('/admin/notificaciones', methods=['GET', 'POST'])
 def admin_notificaciones():
@@ -1374,7 +1375,7 @@ def admin_notificaciones():
             """, (titulo, mensaje, municipio, col, fecha, lat, lng))
 
         conn.commit()
-        
+
         conn.close()
 
 

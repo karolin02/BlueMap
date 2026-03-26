@@ -1,10 +1,21 @@
+/* ===== EVITA DESBORDE ===== */
+html, body {
+    overflow-x: hidden;
+}
 
-
-
+/* ===== ESTILOS GENERALES ===== */
+body {
+    background-color: #f4f6f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
 
 /* ===== NAVBAR ===== */
-
-
+.navbar {
+    background: linear-gradient(135deg, #1C2B48, #245b92);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
 
 .navbar-brand {
     font-size: 1.4rem;
@@ -12,27 +23,106 @@
     color: white !important;
 }
 
-
-/* ===== CONTENEDOR PRINCIPAL ===== */
-/* ===== CONTENEDOR PRINCIPAL (BASE) ===== */
+/* ===== CONTENEDOR ===== */
 .container {
     background-color: white;
     padding: 45px;
     border-radius: 20px;
-
     margin-top: 40px;
+}
 
+/* ===== TITULOS ===== */
+h2 {
+    color: #1C2B48;
+    margin-bottom: 15px;
+}
+
+/* ===== TEXTO ===== */
+p {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* ===== BOTONES ===== */
+.btn-primary {
+    background-color: #245b92;
+    border: none;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background-color: #1d4a78;
+}
+
+.btn-outline-primary {
+    border: 2px solid #245b92;
+    color: #245b92;
+}
+
+.btn-outline-primary:hover {
+    background-color: #245b92;
+    color: white;
+}
+
+/* ===== TARJETAS ===== */
+.card {
+    border: none;
+    border-radius: 18px;
+    padding: 30px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.08);
+}
+
+/* ===== CONTACTO ===== */
+.contacto-section {
+    background-color: #C4D8E5;
+    border-radius: 25px;
+    padding: 45px;
+}
+
+/* ===== MAPA ===== */
+iframe {
+    width: 100%;
+    height: 350px;
+    border-radius: 15px;
+    border: 1px solid #ddd;
+    margin-top: 15px;
+}
+
+/* ===== IMÁGENES DE PIPAS ===== */
+.pipa-img {
+    width: 180px;
+    height: auto;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+/* ===== FOOTER ===== */
+footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 14px;
+    color: #666;
 }
 
 /* ===== RESPONSIVE CELULAR ===== */
 @media (max-width: 768px) {
 
     .container {
-        padding: 20px; /* 🔥 menos espacio */
+        padding: 20px;
         margin-top: 20px;
         border-radius: 15px;
         width: 100%;
-
     }
 
     h2 {
@@ -55,159 +145,23 @@
         padding: 25px;
     }
 
-    /* 🔥 MAPA RESPONSIVE */
     iframe {
-        width: 100%;
-        height: 300px;
+        height: 250px;
     }
 
-    
-
     .btn {
-        width: 100%; /* botones completos */
+        width: 100%;
     }
 
     table {
         font-size: 0.85rem;
     }
 
-}
-
-
-
-/* ===== TITULOS ===== */
-
-
-h2 {
-    color: #1C2B48; /* Midnight Blue */
-    margin-bottom: 15px;
-}
-
-
-/* ===== TEXTO ===== */
-p {
-    font-size: 1.05rem;
-    line-height: 1.6;
-    color: #333;
-}
-
-
-/* ===== BOTÓN PRINCIPAL ===== */
-.btn-primary {
-    background-color: #245b92;
-    border: none;
-    padding: 12px 20px;
-    font-size: 1rem;
-    border-radius: 10px;
-    color: white;
-    font-weight: 600;
-    transition: 0.2s ease;
-}
-
-.btn-primary:hover {
-    background-color: #1d4a78; /* un poco más oscuro */
-    color: white;
-}
-
-/* ===== BOTÓN OUTLINE ===== */
-.btn-outline-primary {
-    border: 2px solid #245b92;
-    color: #245b92;
-}
-
-.btn-outline-primary:hover {
-    background-color: #245b92;
-    color: white;
-}
-
-
-
-/* ===== TARJETAS ===== */
-.card {
-    border: none;
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
-}
-
-/* Misión */
-.card-mision {
-    background-color: #C4D8E5; /* Light Blue Grey */
-    color: #1C2B48;
-}
-
-/* Visión */
-.card-vision {
-    background-color: #A7C7E7; /* Baby Blue Eyes */
-    color: #1C2B48;
-}
-
-/* Valores */
-.card-valores {
-    background-color: #8EB1D1; /* Cool Cerulean */
-    color: #1C2B48;
-}
-
-
-/* ===== SECCIÓN CONTACTO ===== */
-.contacto-section {
-    background-color: #C4D8E5;
-    border-radius: 25px;
-    padding: 45px;
-}
-
-
-/* ===== MAPA ===== */
-iframe {
-    border-radius: 15px;
-    border: 1px solid #ddd;
-    margin-top: 15px;
-}
-
-
-/* ===== FOOTER ===== */
-.footer {
-    text-align: center;
-    margin-top: 40px;
-    font-size: 0.9rem;
-    color: #555;
-}
-
-/* ===== MEJORAS VISUALES PERFIL ===== */
-
-/* Fondo general un poco más suave */
-body {
-    background-color: #f4f6f9; /* reemplaza suavemente el actual */
-     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-}
-
-/* Navbar con gradiente moderno */
-.navbar {
-    background: linear-gradient(135deg, #1C2B48, #245b92);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
-}
-
-/* Tarjetas más elegantes */
-.card {
-    border-radius: 18px;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-/* Efecto hover profesional */
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 28px rgba(0,0,0,0.08);
-}
-
-/* Footer más fino */
-footer {
-    font-size: 14px;
-    color: #666;
-}
-
-/* 🔥 EVITA QUE SE DESBORDE EN CELULAR */
-html, body {
-    overflow-x: hidden;
+    /* 🔥 IMÁGENES RESPONSIVE */
+    .pipa-img {
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto;
+        display: block;
+    }
 }
