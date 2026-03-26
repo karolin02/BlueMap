@@ -1426,11 +1426,13 @@ def borrar_notificacion(id):
     flash("Notificación eliminada 🗑️", "success")
     return redirect(url_for('admin_notificaciones'))
 # EJECUCIÓN ------------------------------------------------------------------------------
+with app.app_context():
+    init_db()
+    insertar_colonias()
+    crear_admin_si_no_existe()
+
 if __name__ == "__main__":
   
     app.run(host="0.0.0.0", port=5000, debug=True)
 
-    with app.app_context():
-        init_db()
-        insertar_colonias()
-        crear_admin_si_no_existe()
+  
