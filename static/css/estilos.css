@@ -168,6 +168,13 @@ footer {
         font-size: 0.85rem;
     }
 
+    /* IMAGEN ODS */
+    .ods-img{
+        width:100%;
+        max-width:500px;
+        height:auto;
+    }
+
     /* ===== IMÁGENES RESPONSIVE ===== */
     .pipa-img {
         width: 100%;

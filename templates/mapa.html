@@ -374,62 +374,82 @@ src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}">
 
 
 <div class="card mt-4 shadow">
-    <div class="card-body">
-        <h5 class="card-title mb-3"><strong>INFORMACION SOBRE EL SUMISTRO DE AGUA</strong></h5>
+<div class="card-body">
 
-        <!-- PIPAS PUBLICAS -->
-        <div class="d-flex flex-column flex-md-row align-items-center mb-4 text-center text-md-start">
-            <img src="/static/img/publica.jpeg" 
-            class="img-fluid rounded me-md-3 mb-2 mb-md-0 pipa-img">
-            <div>
-                <strong>Pipas públicas</strong><br>
-                Se notificará a través del sistema cuando se envíen.
-            </div>
-        </div>
+<h5 class="card-title mb-4"><strong>INFORMACION SOBRE EL SUMISTRO DE AGUA</strong></h5>
 
-        <hr>
+<!-- PIPAS PUBLICAS -->
+<div class="row align-items-center mb-4">
+    
+    <div class="col-md-3 text-center">
+        <img src="/static/img/publica.jpeg" class="img-fluid pipa-img">
+    </div>
 
-        <h6 class="mb-3">💧 Pipas de paga</h6>
+    <div class="col-md-9">
+        <strong>Pipas públicas</strong><br>
+        Se notificará a través del sistema cuando se envíen.
+    </div>
 
-   <!-- PROVEEDOR 1 -->
-<div class="d-flex align-items-center mb-3 flex-column flex-md-row">
-    <img src="/static/img/pipa3.jpeg" 
-            class="img-fluid rounded me-md-3 mb-2 mb-md-0 pipa-img">
-        
-    <div>
+</div>
+
+<hr>
+
+<h6 class="mb-4">💧 Pipas de paga</h6>
+
+
+<!-- PROVEEDOR 1 -->
+<div class="row align-items-center mb-4">
+
+    <div class="col-md-3 text-center">
+        <img src="/static/img/pipa3.jpeg" class="img-fluid pipa-img">
+    </div>
+
+    <div class="col-md-9">
         <strong>Agua Express García</strong><br>
         💰 $70 por 200 litros<br>
         📞 81 1234 5678
     </div>
+
 </div>
 
+
 <!-- PROVEEDOR 2 -->
-<div class="d-flex align-items-center mb-3 flex-column flex-md-row">
-    <img src="/static/img/pipa2.jpeg" 
-            class="img-fluid rounded me-md-3 mb-2 mb-md-0 pipa-img">
-        
-    <div>
+<div class="row align-items-center mb-4">
+
+    <div class="col-md-3 text-center">
+        <img src="/static/img/pipa2.jpeg" class="img-fluid pipa-img">
+    </div>
+
+    <div class="col-md-9">
         <strong>Pipas del Norte</strong><br>
         💰 $90 por 300 litros<br>
         📞 81 2345 6789
     </div>
+
 </div>
 
+
 <!-- PROVEEDOR 3 -->
-<div class="d-flex align-items-center flex-column flex-md-row">
-    <img src="/static/img/pipa1.jpeg" 
-            class="img-fluid rounded me-md-3 mb-2 mb-md-0 pipa-img">
-         
-    <div>
+<div class="row align-items-center mb-4">
+
+    <div class="col-md-3 text-center">
+        <img src="/static/img/pipa1.jpeg" class="img-fluid pipa-img">
+    </div>
+
+    <div class="col-md-9">
         <strong>Suministro AquaPlus</strong><br>
         💰 $120 por 500 litros<br>
         📞 81 3456 7890
     </div>
+
 </div>
-        <p class="text-muted mt-3">
-            *Los precios y disponibilidad pueden variar según la zona.
-        </p>
-    </div>
+
+<p class="text-muted">
+*Los precios y disponibilidad pueden variar según la zona.
+</p>
+
 </div>
+</div>
+   
 {% endblock %}
 
