@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
+import psycopg2
 
 
 import os
@@ -39,7 +40,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # CONFIGURACIÓN SEGURA DE COOKIES DE SESIÓN-----------------------------------------------
-app.config['SESSION_COOKIE_SECURE'] = False
+app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_PERMANENT'] = True
@@ -94,7 +95,7 @@ def enviar_correo_sendgrid(destino, asunto, contenido_html):
 
 # DB MAPA ------------------------------------------------------------------------------
 def get_db_data():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM colonias")
@@ -105,10 +106,22 @@ def get_db_data():
 
     conn.close()
     return colonias, puntos
+#--------------------------------------------------------------------------------------
+import psycopg2.extras
 
 def get_db_connection():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
+
+    database_url = os.environ.get("DATABASE_URL")
+
+    if database_url:
+        conn = psycopg2.connect(
+            database_url,
+            cursor_factory=psycopg2.extras.RealDictCursor
+        )
+    else:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+
     return conn
 
 
@@ -136,12 +149,15 @@ def mapa():
 
     # 👑 ADMIN
     if session.get('rol') == 'admin':
-        colonias = conn.execute("SELECT id, nombre FROM colonias").fetchall()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, nombre FROM colonias")
+        colonias = cursor.fetchall()
 
-        notificaciones = conn.execute("""
+        cursor.execute("""
             SELECT titulo, mensaje, lat, lng 
             FROM notificaciones
-        """).fetchall()
+        """)
+        notificaciones = cursor.fetchall()
 
         notificaciones = [
             [n["titulo"], n["mensaje"], n["lat"], n["lng"]]
@@ -162,12 +178,15 @@ def mapa():
         return "Acceso restringido"
 
     # 🔥 ESTO DEBE IR DENTRO
-    colonias = conn.execute("SELECT id, nombre, lat, lon FROM colonias").fetchall()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, nombre, lat, lon FROM colonias")
+    colonias = cursor.fetchall()
 
-    notificaciones = conn.execute("""
+    cursor.execute("""
         SELECT titulo, mensaje, lat, lng 
         FROM notificaciones
-    """).fetchall()
+    """)
+    notificaciones = cursor.fetchall()
 
     notificaciones = [
         [n["titulo"], n["mensaje"], n["lat"], n["lng"]]
@@ -235,7 +254,7 @@ def geocode():
 from flask import jsonify
 @app.route("/api/colonias")
 def obtener_colonias():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("SELECT nombre, lat, lon FROM colonias")
@@ -244,11 +263,12 @@ def obtener_colonias():
     colonias = []
     for c in datos:
         colonias.append({
-            "nombre": c[0],
-            "lat": c[1],
-            "lng": c[2]
+            "nombre": c["nombre"],
+            "lat": c["lat"],
+            "lng": c["lon"]
         })
 
+    conn.close()
     return jsonify(colonias)
 
 
@@ -275,7 +295,7 @@ def purificacion():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     # 🔥 TRAER COLONIAS SIEMPRE
@@ -321,14 +341,16 @@ def register():
 
         try:
             cursor.execute("""
-                INSERT INTO usuarios 
-                (nombre, email, password, municipio, colonia, verificado, token_verificacion)
-                VALUES (?, ?, ?, ?, ?, 0, ?)
+            INSERT INTO usuarios 
+            (nombre, email, password, municipio, colonia, verificado, token_verificacion)
+            VALUES (%s, %s, %s, %s, %s, 0, %s)
             """, (nombre, email, password_hash, municipio, colonia, token))
 
             conn.commit()
 
-        except sqlite3.IntegrityError:
+        
+        except Exception:
+            conn.rollback()
             conn.close()
             flash("El correo ya está registrado.", "danger")
             return render_template("register.html", colonias=colonias)
@@ -441,7 +463,7 @@ def privacidad():
 @app.route('/completar-registro')
 def completar_registro():
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("SELECT nombre FROM colonias")
@@ -475,11 +497,11 @@ def guardar_usuario():
         flash("Todos los campos son obligatorios.", "danger")
         return redirect(url_for('completar_registro'))
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     # 🔒 Validar si ya existe el usuario
-    cursor.execute("SELECT id FROM usuarios WHERE email=?", (correo,))
+    cursor.execute("SELECT id FROM usuarios WHERE email=%s", (correo,))
     existe = cursor.fetchone()
 
     if existe:
@@ -489,7 +511,7 @@ def guardar_usuario():
 
     # 🔒 Validar colonia contra BD (SEGURIDAD)
     # 🔒 Validar colonia contra BD (MÁS ROBUSTO)
-    cursor.execute("SELECT nombre FROM colonias WHERE LOWER(nombre)=LOWER(?)", (colonia,))
+    cursor.execute("SELECT nombre FROM colonias WHERE LOWER(nombre)=LOWER(%s)", (colonia,))
     colonia_valida = cursor.fetchone()
         
 
@@ -503,22 +525,22 @@ def guardar_usuario():
 
     cursor.execute("""
     INSERT INTO usuarios (nombre, email, password, municipio, colonia, verificado)
-    VALUES (?, ?, ?, ?, ?, 1)
+    VALUES (%s, %s, %s, %s, %s, 1)
     """, (nombre, correo, password_dummy, municipio, colonia))
 
     conn.commit()
 
     # 🔥 Obtener usuario recién creado
-    cursor.execute("SELECT * FROM usuarios WHERE email=?", (correo,))
+    cursor.execute("SELECT * FROM usuarios WHERE email=%s", (correo,))
     usuario = cursor.fetchone()
 
     conn.close()
 
     # 🔥 Crear sesión automática
-    session['usuario_id'] = usuario[0]
-    session['usuario_nombre'] = usuario[1]
-    session['municipio'] = usuario[4]
-    session['usuario_colonia'] = usuario[5]
+    session['usuario_id'] = usuario["id"]
+    session['usuario_nombre'] = usuario["nombre"]
+    session['municipio'] = usuario["municipio"]
+    session['usuario_colonia'] = usuario["colonia"]
 
     # 🧹 Limpiar datos de Google
     session.pop("nombre", None)
@@ -530,10 +552,10 @@ def guardar_usuario():
 @app.route("/verificar/<token>")
 def verificar(token):
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT id FROM usuarios WHERE token_verificacion = ?", (token,))
+    cursor.execute("SELECT id FROM usuarios WHERE token_verificacion = %s", (token,))
     usuario = cursor.fetchone()
 
     if not usuario:
@@ -545,8 +567,8 @@ def verificar(token):
         UPDATE usuarios
         SET verificado = 1,
             token_verificacion = NULL
-        WHERE id = ?
-    """, (usuario[0],))
+       WHERE id = %s
+""", (usuario["id"],))
 
     conn.commit()
     conn.close()
@@ -579,36 +601,35 @@ def login():
             flash("Correo inválido.", "danger")
             return redirect(url_for("login"))
 
-        conn = sqlite3.connect(DB_PATH)
+        conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM usuarios WHERE email = ?", (email,))
+        cursor.execute("SELECT * FROM usuarios WHERE email = %s", (email,))
         usuario = cursor.fetchone()
         conn.close()
 
 
         # Verificar credenciales
-        if not usuario or not check_password_hash(usuario[3], password):
+        if not usuario or not check_password_hash(usuario["password"], password):
             flash("Correo o contraseña incorrectos.", "danger")
             return redirect(url_for("login"))
 
 
         # Verificar cuenta confirmada
-        if usuario[6] == 0:
+        if usuario["verificado"] == 0:
             flash("Debes verificar tu correo antes de iniciar sesión.", "warning")
             return redirect(url_for("login"))
 
 
         # Crear sesión
-        session['usuario_id'] = usuario[0]
-        session['usuario_nombre'] = usuario[1]
-        session['municipio'] = usuario[4]
-        session['usuario_colonia'] = usuario[5]
-        session['rol'] = usuario[12] if len(usuario) > 12 else 'usuario'
+        session['usuario_id'] = usuario["id"]
+        session['usuario_nombre'] = usuario["nombre"]
+        session['municipio'] = usuario["municipio"]
+        session['usuario_colonia'] = usuario["colonia"]
+        session['rol'] = usuario.get("rol", "usuario")
 
-        if len(usuario) > 10:
-            session['usuario_imagen'] = usuario[10]
-        else:
-            session['usuario_imagen'] = None 
+        
+        session['usuario_imagen'] = usuario.get("imagen")
+       
 
 
         # Protección contra Open Redirect
@@ -644,9 +665,9 @@ def recuperar():
             flash("Correo inválido.", "danger")
             return redirect(url_for('recuperar'))
 
-        conn = sqlite3.connect(DB_PATH)
+        conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT id FROM usuarios WHERE email = ?", (email,))
+        cursor.execute("SELECT id FROM usuarios WHERE email = %s", (email,))
         usuario = cursor.fetchone()
 
         if usuario:
@@ -655,9 +676,9 @@ def recuperar():
 
             cursor.execute("""
                 UPDATE usuarios
-                SET token_recuperacion = ?, expiracion_token = ?
-                WHERE id = ?
-            """, (token, expiracion, usuario[0]))
+                SET token_recuperacion = %s, expiracion_token = %s
+               WHERE id = %s
+                """, (token, expiracion, usuario["id"]))
 
             conn.commit()
 
@@ -771,13 +792,13 @@ def recuperar():
 @app.route('/reset/<token>', methods=['GET', 'POST'])
 def reset_password(token):
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT id, expiracion_token 
         FROM usuarios 
-        WHERE token_recuperacion = ?
+        WHERE token_recuperacion =  %s
     """, (token,))
     usuario = cursor.fetchone()
 
@@ -786,7 +807,8 @@ def reset_password(token):
         flash("Token inválido o expirado.", "danger")
         return redirect(url_for('login'))
 
-    expiracion = datetime.strptime(usuario[1], "%Y-%m-%d %H:%M:%S.%f")
+
+    expiracion = usuario["expiracion_token"]
 
     if datetime.utcnow() > expiracion:
         conn.close()
@@ -804,9 +826,9 @@ def reset_password(token):
 
         cursor.execute("""
             UPDATE usuarios
-            SET password = ?, token_recuperacion = NULL, expiracion_token = NULL
-            WHERE id = ?
-        """, (password_hash, usuario[0]))
+            SET password = %s, token_recuperacion = NULL, expiracion_token = NULL
+            WHERE id = %s
+        """, (password_hash, usuario["id"]))
 
         conn.commit()
         conn.close()
@@ -835,11 +857,11 @@ def authorize():
 
     email = user_info['email']
     nombre = user_info['name']
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     # Revisar si ya existe el usuario
-    cursor.execute("SELECT * FROM usuarios WHERE email=?", (email,))
+    cursor.execute("SELECT * FROM usuarios WHERE email=%s", (email,))
     user = cursor.fetchone()
 
     if not user:
@@ -853,20 +875,18 @@ def authorize():
         return redirect('/completar-registro')
 
     # Obtener usuario para sesión
-    cursor.execute("SELECT * FROM usuarios WHERE email=?", (email,))
+    cursor.execute("SELECT * FROM usuarios WHERE email=%s", (email,))
     usuario = cursor.fetchone()
     conn.close()
 
-    session['usuario_id'] = usuario[0]
-    session['usuario_nombre'] = usuario[1]
-    session['municipio'] = usuario[4]
-    session['usuario_colonia'] = usuario[5]
+
+    session['usuario_id'] = usuario["id"]
+    session['usuario_nombre'] = usuario["nombre"]
+    session['municipio'] = usuario["municipio"]
+    session['usuario_colonia'] = usuario["colonia"]
 
     # manejar imagen de perfil (igual que login normal)
-    if len(usuario) > 10:
-        session['usuario_imagen'] = usuario[10]  # puede ser None
-    else:
-        session['usuario_imagen'] = None
+    session['usuario_imagen'] = usuario.get("imagen")
 
     return redirect(url_for('mapa'))
 
@@ -885,12 +905,12 @@ def contacto():
             flash("Todos los campos son obligatorios", "danger")
             return redirect('/contacto')
 
-        conn = sqlite3.connect('database.db')  # ⚠ cambia por tu nombre real
+        conn = get_db_connection()  
         cursor = conn.cursor()
 
         cursor.execute("""
             INSERT INTO contactos (nombre, email, mensaje)
-            VALUES (?, ?, ?)
+            VALUES (%s, %s, %s)
         """, (nombre, email, mensaje))
 
         conn.commit()
@@ -900,8 +920,7 @@ def contacto():
         return redirect('/contacto')
 
     return render_template('contacto.html')
-# NOTIFICACIONES ----------------------------------------------------------------------
-from datetime import datetime
+
 
 # NOTIFICACIONES ----------------------------------------------------------------------
 @app.route('/notificaciones')
@@ -911,23 +930,22 @@ def ver_notificaciones():
 
     municipio = session.get('municipio', '').lower()
 
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     # 🔔 TRAER NOTIFICACIONES + FECHA
     if session.get('rol') == 'admin':
         cursor.execute("""
-            SELECT titulo, mensaje, GROUP_CONCAT(colonia) as colonias, MAX(fecha) as fecha
+            SELECT titulo, mensaje, STRING_AGG(colonia, ',') as colonias, MAX(fecha) as fecha
             FROM notificaciones
             GROUP BY titulo, mensaje
             ORDER BY fecha DESC
         """)
     else:
         cursor.execute("""
-            SELECT titulo, mensaje, GROUP_CONCAT(colonia) as colonias, MAX(fecha) as fecha
+            SELECT titulo, mensaje, STRING_AGG(colonia, ',') as colonias, MAX(fecha) as fecha
             FROM notificaciones
-            WHERE LOWER(municipio)=?
+            WHERE LOWER(municipio)=%s
             GROUP BY titulo, mensaje
             ORDER BY fecha DESC
         """, (municipio,))
@@ -971,10 +989,11 @@ def ver_notificaciones():
         cursor.execute("""
             SELECT COUNT(DISTINCT titulo || mensaje)
             FROM notificaciones
-            WHERE LOWER(municipio)=?
+            WHERE LOWER(municipio)=%s
         """, (municipio,))
 
-    total_notificaciones = cursor.fetchone()[0]
+    
+    total_notificaciones = cursor.fetchone()["count"]
 
     conn.close()
 
@@ -1026,10 +1045,10 @@ def subir_foto():
 
 
     # Guardar en base de datos
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "UPDATE usuarios SET imagen=? WHERE id=?",
+        "UPDATE usuarios SET imagen=%s WHERE id=%s",
         (nombre_archivo, session['usuario_id'])
     )
     conn.commit()
@@ -1073,12 +1092,12 @@ def admin():
 # REGISTRO --------------------------------------------------------------------------------------
 
 def crear_admin_si_no_existe():
-    conn = sqlite3.connect('database.db')
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     correo = "bluemap561@gmail.com"
 
-    cursor.execute("SELECT * FROM usuarios WHERE email=?", (correo,))
+    cursor.execute("SELECT * FROM usuarios WHERE email=%s", (correo,))
     admin = cursor.fetchone()
 
     if not admin:
@@ -1086,7 +1105,7 @@ def crear_admin_si_no_existe():
 
         cursor.execute("""
         INSERT INTO usuarios (nombre, email, password, municipio, colonia, verificado, rol)
-        VALUES (?, ?, ?, ?, ?, 1, 'admin')
+        VALUES (%s, %s, %s, %s, %s, 1, 'admin')
         """, ("Admin", correo, password_hash, "García", "Centro"))
 
         conn.commit()
@@ -1102,22 +1121,21 @@ def admin_login():
         correo = request.form.get('correo')
         password = request.form.get('password')
 
-        conn = sqlite3.connect('database.db')
-        conn.row_factory = sqlite3.Row
+        conn = get_db_connection()
         cursor = conn.cursor()
 
         cursor.execute("""
             SELECT * FROM usuarios 
-            WHERE email=? AND rol='admin'
+            WHERE email=%s AND rol='admin'
         """, (correo,))
 
         admin = cursor.fetchone()
         conn.close()
 
-        if admin and check_password_hash(admin['password'], password):
-            session['rol'] = admin['rol']
-            session['usuario_id'] = admin['id']
-            session['usuario_nombre'] = admin['nombre']
+        if admin and check_password_hash(admin["password"], password):
+            session['rol'] = admin["rol"]
+            session['usuario_id'] = admin["id"]
+            session['usuario_nombre'] = admin["nombre"]
 
             return redirect('/admin')
         else:
@@ -1132,7 +1150,7 @@ def admin_mensajes():
     if session.get('rol') != 'admin':
         return "Acceso restringido"
 
-    conn = sqlite3.connect('database.db')
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("SELECT nombre, email, mensaje, fecha FROM contactos ORDER BY id DESC")
@@ -1148,7 +1166,7 @@ def admin_notificaciones():
     if session.get('rol') != 'admin':
         return "Acceso restringido"
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     # 🔥 Obtener colonias SIEMPRE
@@ -1219,7 +1237,7 @@ def inject_notificaciones():
 
     municipio = session.get('municipio', '').lower()
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -1247,7 +1265,8 @@ def borrar_notificacion(id):
     if session.get('rol') != 'admin':
         return "Acceso restringido"
 
-    conn = sqlite3.connect(DB_PATH)
+    
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM notificaciones WHERE id = ?", (id,))
