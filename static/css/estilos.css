@@ -1,17 +1,10 @@
-/* ===== ESTILOS GENERALES ===== */
-body {
-    background-color: #E8ECEF; /* Platinum */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-}
+
+
 
 
 /* ===== NAVBAR ===== */
-.navbar {
-    background-color: #1C2B48; /* Midnight Blue */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
+
+
 
 .navbar-brand {
     font-size: 1.4rem;
@@ -21,13 +14,65 @@ body {
 
 
 /* ===== CONTENEDOR PRINCIPAL ===== */
+/* ===== CONTENEDOR PRINCIPAL (BASE) ===== */
 .container {
     background-color: white;
     padding: 45px;
     border-radius: 20px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
+
     margin-top: 40px;
+
 }
+
+/* ===== RESPONSIVE CELULAR ===== */
+@media (max-width: 768px) {
+
+    .container {
+        padding: 20px; /* 🔥 menos espacio */
+        margin-top: 20px;
+        border-radius: 15px;
+        width: 100%;
+
+    }
+
+    h2 {
+        font-size: 1.4rem;
+    }
+
+    p {
+        font-size: 0.95rem;
+    }
+
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .contacto-section {
+        padding: 25px;
+    }
+
+    /* 🔥 MAPA RESPONSIVE */
+    iframe {
+        width: 100%;
+        height: 300px;
+    }
+
+    
+
+    .btn {
+        width: 100%; /* botones completos */
+    }
+
+    table {
+        font-size: 0.85rem;
+    }
+
+}
+
 
 
 /* ===== TITULOS ===== */
@@ -133,6 +178,9 @@ iframe {
 /* Fondo general un poco más suave */
 body {
     background-color: #f4f6f9; /* reemplaza suavemente el actual */
+     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
 /* Navbar con gradiente moderno */
@@ -157,4 +205,9 @@ body {
 footer {
     font-size: 14px;
     color: #666;
+}
+
+/* 🔥 EVITA QUE SE DESBORDE EN CELULAR */
+html, body {
+    overflow-x: hidden;
 }

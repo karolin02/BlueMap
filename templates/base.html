@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <!-- 🔥 ESTA LÍNEA SOLUCIONA TODO -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plataforma del Agua - ODS 6</title>
 
     <!-- Bootstrap -->
@@ -29,20 +31,26 @@
         BlueMap
     </a>
 
-    <div class="collapse navbar-collapse">
+    <!-- 🔥 BOTÓN HAMBURGUESA -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-        <div class="ms-auto d-flex align-items-center gap-2">
+    <!-- 🔥 CONTENIDO COLAPSABLE -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+
+        <div class="ms-auto d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2 mt-3 mt-lg-0">
 
             <a href="{{ url_for('index') }}"
-               class="btn btn-outline-light fw-bold px-3">
+               class="btn btn-outline-light fw-bold px-3 w-100 w-lg-auto">
                 Inicio
             </a>
 
             {% if session.get('usuario_id') %}
 
-            <div class="dropdown">
+            <div class="dropdown w-100 w-lg-auto">
 
-                <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center gap-2"
+                <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center gap-2 w-100 justify-content-center"
                         data-bs-toggle="dropdown">
 
                     {% if session.get('usuario_imagen') %}
@@ -67,17 +75,11 @@
                         </div>
                     {% endif %}
 
-                    <span class="fw-bold">
-                        {{ session.get('usuario_nombre','Usuario') }}
-                    </span>
-
-                    {% if session.get('rol') == 'admin' %}
-                        <span class="badge bg-danger ms-2">Admin</span>
-                    {% endif %}
+                    {{ session.get('usuario_nombre','Usuario') }}
 
                 </button>
 
-                <ul class="dropdown-menu dropdown-menu-end">
+                <ul class="dropdown-menu dropdown-menu-end w-100">
 
                     <li>
                         <a class="dropdown-item" href="{{ url_for('perfil') }}">
@@ -94,16 +96,14 @@
                     {% endif %}
 
                     <li>
-                        <a href="{{ url_for('ver_notificaciones') }}" class="btn btn-light position-relative">
-                            Notificaciones🔔
-                            
-                           {% if nuevas_notificaciones > 0 %}
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        <a href="{{ url_for('ver_notificaciones') }}" class="dropdown-item position-relative">
+                            Notificaciones 🔔
+                            {% if nuevas_notificaciones > 0 %}
+                            <span class="badge bg-danger ms-2">
                                 {{ nuevas_notificaciones }}
                             </span>
-                           {% endif %}
+                            {% endif %}
                         </a>
-                      
                     </li>
 
                     <li><hr class="dropdown-divider"></li>
@@ -120,12 +120,12 @@
             {% else %}
 
             <a href="{{ url_for('login') }}"
-               class="btn btn-outline-light fw-bold px-3">
+               class="btn btn-outline-light fw-bold px-3 w-100 w-lg-auto">
                 Login
             </a>
 
             <a href="{{ url_for('register') }}"
-               class="btn btn-outline-light fw-bold px-3">
+               class="btn btn-outline-light fw-bold px-3 w-100 w-lg-auto">
                 Registro
             </a>
 
@@ -135,7 +135,7 @@
     </div>
 </nav>
 
-<div class="container my-5">
+<div class="container-fluid px-3 px-md-5 my-5"></div>
     {% block contenido %}{% endblock %}
 </div>
 
