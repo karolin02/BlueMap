@@ -427,6 +427,15 @@ def register():
     # 🔥 GET (cuando solo carga la página)
     conn.close()
     return render_template('register.html', colonias=colonias)
+#--------------------------------------------------------------------------------------
+@app.route("/terminos")
+def terminos():
+    return render_template("terminos.html")
+
+
+@app.route("/privacidad")
+def privacidad():
+    return render_template("privacidad.html")
 
 #-----------------------------------------------------------------------------------------
 @app.route('/completar-registro')
