@@ -34,10 +34,13 @@ def validar_password(password):
 # CONFIGURACIÓN----------------------------------------------------------------------------
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_key")
+
 csrf = CSRFProtect(app)
 
 from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+
 
 # CONFIGURACIÓN SEGURA DE COOKIES DE SESIÓN-----------------------------------------------
 app.config['SESSION_COOKIE_SECURE'] = True
@@ -107,22 +110,169 @@ def get_db_data():
     conn.close()
     return colonias, puntos
 #--------------------------------------------------------------------------------------
+import psycopg2
 import psycopg2.extras
+import sqlite3
 
 def get_db_connection():
-
     database_url = os.environ.get("DATABASE_URL")
 
     if database_url:
-        conn = psycopg2.connect(
+        return psycopg2.connect(
             database_url,
             cursor_factory=psycopg2.extras.RealDictCursor
         )
     else:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
+        return conn
 
-    return conn
+
+
+#========================================================================================
+#Base de datos---------------------------------------------------------------------------
+#========================================================================================
+
+
+def init_db():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS colonias (
+        id INTEGER PRIMARY KEY,
+        nombre TEXT,
+        lat REAL,
+        lon REAL,
+        horario TEXT
+    );
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS usuarios (
+        id SERIAL PRIMARY KEY,
+        nombre TEXT,
+        email TEXT UNIQUE,
+        password TEXT,
+        municipio TEXT,
+        colonia TEXT,
+        verificado BOOLEAN,
+        token_verificacion TEXT,
+        token_recuperacion TEXT,
+        expiracion_token TIMESTAMP,
+        imagen TEXT,
+        fecha_registro TIMESTAMP,
+        rol TEXT
+    );
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS contactos (
+        id SERIAL PRIMARY KEY,
+        nombre TEXT,
+        email TEXT,
+        mensaje TEXT,
+        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS notificaciones (
+        id SERIAL PRIMARY KEY,
+        titulo TEXT,
+        mensaje TEXT,
+        municipio TEXT,
+        colonia TEXT,
+        fecha TIMESTAMP,
+        lat REAL,
+        lng REAL
+    );
+    """)
+
+    conn.commit()
+    conn.close()
+
+    #-----------------------------------------------------------------------------------
+def insertar_colonias():
+    colonias = [
+        (2,"Colonia Centro",25.809,-100.598,"8:00 - 18:00"),
+        (3,"Alfonso Martínez Domínguez",25.8068363,-100.6048764,None),
+        (4,"Alta Villa",25.7904031,-100.5197683,None),
+        (5,"Altrysa",25.7653498,-100.4526698,None),
+        (6,"Ampliación Cerritos",25.8202523,-100.6112099,None),
+        (7,"Ampliación Los Nogales",25.8027624,-100.6006544,None),
+        (8,"Arana",25.801032,-100.5861995,None),
+        (9,"Arbórea",25.7646882,-100.4425044,None),
+        (10,"Arcos del Poniente",25.8070539,-100.5619349,None),
+        (11,"Arezzo Residencial",25.7686193,-100.4688274,None),
+        (12,"Atera Residencial",25.7677686,-100.469331,None),
+        (13,"Aura Residencial",25.7608102,-100.4694183,None),
+        (14,"Ayuccá Residencial",25.7657047,-100.4733013,None),
+        (15,"Avance Popular",25.8073381,-100.6129693,None),
+        (16,"Balcones de García",25.7952497,-100.6034691,None),
+        (17,"Benito Juárez",25.8059422,-100.5906213,None),
+        (18,"Cerradas Lumina",25.7584358,-100.4633972,None),
+        (19,"Cerradas Solé",25.7691468,-100.449078,None),
+        (20,"Ciudad Cumbres",25.7656524,-100.457921,None),
+        (21,"Colinas del Río",25.805508,-100.6080431,None),
+        (22,"Dominio Cumbres",25.7656524,-100.457921,None),
+        (23,"El Fraile",25.8071675,-100.5039667,None),
+        (24,"El Milagro",25.9174939,-100.8063518,None),
+        (25,"El Palmital",25.8399697,-100.601358,None),
+        (26,"El Porvenir",25.8871602,-100.6745687,None),
+        (27,"El Temporal",25.801032,-100.5861995,None),
+        (28,"Garzas y Capellanía",25.807615,-100.573434,None),
+        (29,"Hacienda del Sol",25.7933789,-100.5591474,None),
+        (30,"La Candelaria",25.6783333,-100.7033333,None),
+        (31,"La Esperanza",25.7202803,-100.520223,None),
+        (32,"La Soledad",25.7755668,-100.692176,None),
+        (33,"Las Lomas",25.7692131,-100.4284482,None),
+        (34,"Las Palmas",25.6660772,-100.7159389,None),
+        (35,"Las Torres",25.7816686,-100.5891991,None),
+        (36,"Los Cerritos",25.8277193,-100.6189515,None),
+        (37,"Los Fierros",25.7124998,-100.708611,None),
+        (38,"Los Nogales",25.7982755,-100.6020617,None),
+        (39,"Maravillas",25.7994021,-100.6121055,None),
+        (40,"Misión San Juan",25.7857118,-100.4635418,None),
+        (41,"Nuevo Cerritos",25.8277193,-100.6189515,None),
+        (42,"Paseo de Capellanía",25.7974492,-100.6133212,None),
+        (43,"Paseo de las Minas",25.8005012,-100.5816573,None),
+        (44,"Paseo de las Torres",25.7898173,-100.5978397,None),
+        (45,"Portal de Lincoln",25.8041612,-100.5415654,None),
+        (46,"Privada Cumbres",25.72634,-100.3487369,None),
+        (47,"Privalia Cumbres",25.7660279,-100.4628392,None),
+        (48,"Privalia Cumbres II",25.7660279,-100.4628392,None),
+        (49,"Privalia García",25.7885965,-100.6003344,None),
+        (50,"Punta Alta",25.7867178,-100.5318392,None),
+        (51,"Punta Diamante",25.7913289,-100.5923781,None),
+    ]
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    for c in colonias:
+        cursor.execute("""
+            INSERT INTO colonias (id, nombre, lat, lon, horario)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (id) DO NOTHING
+        """, c)
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+
+    #-------------------------------------------------------------------------------------
+ 
+
+#==================================================================================================
+#==================================================================================================
+
+
+
+
+
 
 
 
@@ -1204,7 +1354,7 @@ def admin_notificaciones():
             col = col.lower().strip()
             cursor.execute("""
             INSERT INTO notificaciones (titulo, mensaje, municipio, colonia, fecha, lat, lng)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             """, (titulo, mensaje, municipio, col, fecha, lat, lng))
 
         conn.commit()
@@ -1243,10 +1393,10 @@ def inject_notificaciones():
     cursor.execute("""
         SELECT COUNT(DISTINCT titulo || mensaje)
         FROM notificaciones
-        WHERE LOWER(municipio)=?
+        WHERE LOWER(municipio)=%s
     """, (municipio,))
 
-    total = cursor.fetchone()[0]
+    total = cursor.fetchone()["count"]
     conn.close()
 
     vistas = session.get('notificaciones_vistas', 0)
@@ -1269,7 +1419,7 @@ def borrar_notificacion(id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("DELETE FROM notificaciones WHERE id = ?", (id,))
+    cursor.execute("DELETE FROM notificaciones WHERE id = %s", (id,))
     conn.commit()
     conn.close()
 
@@ -1277,5 +1427,10 @@ def borrar_notificacion(id):
     return redirect(url_for('admin_notificaciones'))
 # EJECUCIÓN ------------------------------------------------------------------------------
 if __name__ == "__main__":
-    crear_admin_si_no_existe()
+  
     app.run(host="0.0.0.0", port=5000, debug=True)
+
+    with app.app_context():
+        init_db()
+        insertar_colonias()
+        crear_admin_si_no_existe()
