@@ -1380,6 +1380,7 @@ def admin_notificaciones():
 
 
 #--------------------------------------------------------------------------------------
+
 @app.context_processor
 def inject_notificaciones():
     if 'usuario_id' not in session:
@@ -1388,16 +1389,17 @@ def inject_notificaciones():
     municipio = session.get('municipio', '').lower()
 
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     cursor.execute("""
-    SELECT COUNT(DISTINCT titulo || mensaje) AS total
+        SELECT COUNT(DISTINCT titulo || mensaje) AS total
         FROM notificaciones
         WHERE LOWER(municipio)=%s
     """, (municipio,))
 
-    
-    total = cursor.fetchone()["count"]
+    result = cursor.fetchone()
+    total = result["total"] if result else 0
+
     conn.close()
 
     vistas = session.get('notificaciones_vistas', 0)
