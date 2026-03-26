@@ -1255,7 +1255,7 @@ def crear_admin_si_no_existe():
 
         cursor.execute("""
         INSERT INTO usuarios (nombre, email, password, municipio, colonia, verificado, rol)
-        VALUES (%s, %s, %s, %s, %s, 1, 'admin')
+        VALUES (%s, %s, %s, %s, %s, TRUE, 'admin')
         """, ("Admin", correo, password_hash, "García", "Centro"))
 
         conn.commit()
