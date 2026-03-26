@@ -18,7 +18,7 @@
 <h5>🔍 Buscar colonia</h5>
 
 <select id="direccion" class="form-control mb-2" onchange="buscar()">
-    <option value="{{ c.nombre }}">Selecciona una colonia</option>
+    <option value="">Selecciona una colonia</option>
     {% for c in colonias %}
     <option value="{{ c.lat }},{{ c.lng }}">
     {{ c.nombre }}

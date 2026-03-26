@@ -1396,7 +1396,7 @@ def inject_notificaciones():
         WHERE LOWER(municipio)=%s
     """, (municipio,))
 
-    total = cursor.fetchone()["count"]
+    total = cursor.fetchone()[0]
     conn.close()
 
     vistas = session.get('notificaciones_vistas', 0)
