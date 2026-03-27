@@ -1,4 +1,4 @@
-/* ===== RESET / EVITA DESBORDE ===== */
+/* ===== 1. RESET Y BASES GENERALES ===== */
 * {
     box-sizing: border-box;
 }
@@ -7,18 +7,15 @@ html, body {
     overflow-x: hidden;
     margin: 0;
     padding: 0;
-}
-
-/* ===== ESTILOS GENERALES ===== */
-body {
-    background-color: #f4f6f9;
+    background-color: #f4f6f9; /* Fondo suave */
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* ===== NAVBAR ===== */
+/* ===== 2. NAVBAR (GRADIENTE MODERNO) ===== */
 .navbar {
     background: linear-gradient(135deg, #1C2B48, #245b92);
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    padding: 15px 0;
 }
 
 .navbar-brand {
@@ -27,165 +24,125 @@ body {
     color: white !important;
 }
 
-/* ===== CONTENEDOR PRINCIPAL ===== */
-.container {
+/* ===== 3. CONTENEDOR PRINCIPAL (TARJETA BLANCA) ===== */
+.container-main {
     background-color: white;
-    padding: 40px;
+    padding: 45px;
     border-radius: 20px;
     margin-top: 40px;
-
-    max-width: 850px;
-    width: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    max-width: 900px;
     margin-left: auto;
     margin-right: auto;
 }
 
-/* ===== TITULOS ===== */
-h2 {
+h2, h3 {
     color: #1C2B48;
+    font-weight: 700;
+}
+
+/* ===== 4. SECCIÓN ODS 6 (SIDEBAR) ===== */
+.ods-sidebar {
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    border-left: 5px solid #245b92;
+}
+
+.ods-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 15px;
+    font-weight: 600;
+    color: #444;
 }
 
-/* ===== TEXTO ===== */
-p {
-    font-size: 1.05rem;
-    line-height: 1.6;
-    color: #333;
+/* ===== 5. SECCIÓN PIPAS (SOLUCIÓN TAMAÑO CHICO) ===== */
+.pipa-item {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
 }
 
-/* ===== BOTONES ===== */
+.pipa-item:last-child {
+    border-bottom: none;
+}
+
+/* 🔥 Aquí arreglamos que las imágenes no se vean chicas */
+.pipa-img {
+    width: 100%;           /* Ocupa el ancho disponible */
+    max-width: 450px;      /* Pero no más de 450px para que no se pixelee */
+    height: auto;          /* Mantiene la proporción */
+    border-radius: 10px;
+    display: block;
+    margin: 10px 0;        /* Espaciado arriba y abajo */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.pipa-nombre {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #1C2B48;
+    margin-bottom: 5px;
+}
+
+.pipa-info {
+    font-size: 1rem;
+    color: #555;
+    margin: 2px 0;
+}
+
+/* ===== 6. TARJETAS DE COLORES (MISIÓN, VISIÓN, VALORES) ===== */
+.card {
+    border: none !important;
+    border-radius: 20px;
+    padding: 25px;
+    transition: transform 0.2s ease;
+    height: 100%;
+}
+
+.card:hover { transform: translateY(-5px); }
+
+.card-mision { background-color: #C4D8E5; color: #1C2B48; }
+.card-vision { background-color: #A7C7E7; color: #1C2B48; }
+.card-valores { background-color: #8EB1D1; color: #1C2B48; }
+
+/* ===== 7. SECCIÓN CONTACTO (BLOQUE AZUL) ===== */
+.contacto-section {
+    background-color: #C4D8E5;
+    border-radius: 25px;
+    padding: 40px;
+    margin-top: 40px;
+}
+
+/* ===== 8. BOTONES ===== */
 .btn-primary {
     background-color: #245b92;
     border: none;
-    padding: 12px 20px;
-    font-size: 1rem;
+    padding: 12px 25px;
     border-radius: 10px;
-    color: white;
     font-weight: 600;
+    color: white;
 }
 
 .btn-primary:hover {
     background-color: #1d4a78;
+    transform: scale(1.02);
 }
 
-.btn-outline-primary {
-    border: 2px solid #245b92;
-    color: #245b92;
-}
-
-.btn-outline-primary:hover {
-    background-color: #245b92;
-    color: white;
-}
-
-/* ===== TARJETAS ===== */
-.card {
-    border: none;
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.12);
-}
-
-/* ===== CONTACTO ===== */
-.contacto-section {
-    background-color: #C4D8E5;
-    border-radius: 25px;
-    padding: 45px;
-}
-
-/* ===== MAPA ===== */
-iframe {
-    width: 100%;
-    height: 350px;
-    border-radius: 15px;
-    border: 1px solid #ddd;
-    margin-top: 15px;
-}
-
-/* ===== FLEX ===== */
-.d-flex {
-    gap: 15px;
-}
-
-/* ===== IMÁGENES ===== */
-img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-}
-
-.pipa-img {
-    max-width: 90px;   /* más equilibrado */
-    width: 100%;
-    margin: 0 auto;
-}
-
-/* ===== FOOTER ===== */
-footer {
-    text-align: center;
-    margin-top: 40px;
-    font-size: 14px;
-    color: #666;
-}
-
-/* ===== RESPONSIVE ===== */
+/* ===== 9. RESPONSIVE (CELULAR) ===== */
 @media (max-width: 768px) {
-
-    .container {
+    .container-main, .contacto-section {
         padding: 20px;
         margin-top: 20px;
-        border-radius: 15px;
-        width: 100%;
     }
 
-    h2 {
-        font-size: 1.4rem;
-    }
-
-    p {
-        font-size: 0.95rem;
-    }
-
-    .navbar-brand {
-        font-size: 1.1rem;
-    }
-
-    .card {
-        padding: 20px;
-    }
-
-    .contacto-section {
-        padding: 25px;
-    }
-
-    iframe {
-        height: 250px;
+    .pipa-img {
+        max-width: 100%; /* En celular usa todo el ancho */
     }
 
     .btn {
         width: 100%;
-    }
-
-    table {
-        font-size: 0.85rem;
-    }
-
-    /* IMÁGENES GENERALES */
-    .ods-img,
-    .cuidado-img {
-        width: 100%;
-        max-width: 500px;
-        height: auto;
-    }
-
-    /* PIPAS EN CELULAR */
-    .pipa-img {
-        max-width: 50px;
     }
 }
