@@ -1,18 +1,14 @@
-/* ===== RESET PARA EVITAR BUGS ===== */
-* {
-    box-sizing: border-box;
-}
-
+/* ===== EVITA DESBORDE ===== */
 html, body {
     overflow-x: hidden;
-    margin: 0;
-    padding: 0;
 }
 
 /* ===== ESTILOS GENERALES ===== */
 body {
     background-color: #f4f6f9;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
 /* ===== NAVBAR ===== */
@@ -27,56 +23,122 @@ body {
     color: white !important;
 }
 
-/* ===== CONTENEDOR ===== */
+/* ===== CONTENEDOR PRINCIPAL ===== */
 .container {
     background-color: white;
-    padding: 30px;
+    padding: 40px;
     border-radius: 20px;
-    max-width: 850px;
+    margin-top: 40px;
+
+    max-width: 850px;   /* evita que se estire demasiado en web */
     width: 95%;
-    margin: auto;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-/* ===== TARJETA ===== */
-.card {
-    border: none;
-    border-radius: 20px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-    overflow: hidden;
-}
-
-/* ===== TITULO ===== */
-.card-title {
+/* ===== TITULOS ===== */
+h2 {
     color: #1C2B48;
-    font-size: 1.2rem;
-}
-
-/* ===== PROVEEDORES ===== */
-.proveedor {
-    padding: 10px;
-    border-radius: 10px;
-    transition: 0.2s;
-}
-
-.proveedor:hover {
-    background-color: #f1f5fb;
+    margin-bottom: 15px;
 }
 
 /* ===== TEXTO ===== */
 p {
+    font-size: 1.05rem;
+    line-height: 1.6;
     color: #333;
 }
 
-/* ===== IMÁGENES ===== */
-img {
-    max-width: 100%;
-    height: auto;
-    display: block;
+/* ===== BOTONES ===== */
+.btn-primary {
+    background-color: #245b92;
+    border: none;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
 }
 
+.btn-primary:hover {
+    background-color: #1d4a78;
+}
+
+.btn-outline-primary {
+    border: 2px solid #245b92;
+    color: #245b92;
+}
+
+.btn-outline-primary:hover {
+    background-color: #245b92;
+    color: white;
+}
+
+/* ===== TARJETAS ===== */
+.card {
+    border: none;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+}
+
+/* ===== CONTACTO ===== */
+.contacto-section {
+    background-color: #C4D8E5;
+    border-radius: 25px;
+    padding: 45px;
+}
+
+/* ===== MAPA ===== */
+iframe {
+    width: 100%;
+    height: 350px;
+    border-radius: 15px;
+    border: 1px solid #ddd;
+    margin-top: 15px;
+}
+
+
+/* ===== BLOQUES DE PROVEEDORES ===== */
+.proveedor {
+    padding: 15px;
+    border-radius: 12px;
+    background: #f9fafc;
+}
+
+/* TEXTO */
+.info-text {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* ===== IMÁGENES ===== */
 .pipa-img {
-    max-width: 90px;
-    margin: auto;
+    width: 100%;
+    max-width: 220px;   /* tamaño bonito */
+    height: auto;
+    border-radius: 12px;
+    display: block;
+    margin: 0 auto;
+    object-fit: cover;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+
+    .pipa-img {
+        max-width: 160px;
+    }
+
+    .info-text {
+        font-size: 0.95rem;
+    }
 }
 
 /* ===== FOOTER ===== */
@@ -87,27 +149,62 @@ footer {
     color: #666;
 }
 
-/* ===== RESPONSIVE ===== */
+/* ===== RESPONSIVE CELULAR ===== */
 @media (max-width: 768px) {
 
     .container {
         padding: 20px;
+        margin-top: 20px;
         border-radius: 15px;
+        width: 100%;
     }
 
-    .pipa-img {
-        max-width: 50px;
-    }
-
-    .card-title {
-        font-size: 1rem;
-    }
-
-    h6 {
-        font-size: 0.95rem;
+    h2 {
+        font-size: 1.4rem;
     }
 
     p {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
+
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .contacto-section {
+        padding: 25px;
+    }
+
+    iframe {
+        height: 250px;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    table {
+        font-size: 0.85rem;
+    }
+
+    /* IMAGEN ODS */
+    .ods-img{
+        width:100%;
+        max-width:500px;
+        height:auto;
+    }
+
+    /* IMAGEN CUIDADO DEL AGUA */
+    .cuidado-img{
+        width:100%;
+        max-width:500px;
+        height:auto;
+    }
+
+    
+  
 }
