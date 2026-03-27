@@ -1,6 +1,30 @@
-/* ===== EVITA DESBORDE ===== */
+/* ===== RESET / EVITA DESBORDE ===== */
+* {
+    box-sizing: border-box;
+}
+
 html, body {
     overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+/* ===== ESTILOS GENERALES ===== */
+body {
+    background-color: #f4f6f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+    background: linear-gradient(135deg, #1C2B48, #245b92);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-brand {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: white !important;
 }
 
 /* ===== CONTENEDOR PRINCIPAL ===== */
@@ -9,56 +33,105 @@ html, body {
     padding: 40px;
     border-radius: 20px;
     margin-top: 40px;
-    max-width: 1000px;
-    width: 95%;
+
+    max-width: 850px;
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
 }
 
-/* ===== TARJETA ===== */
+/* ===== TITULOS ===== */
+h2 {
+    color: #1C2B48;
+    margin-bottom: 15px;
+}
+
+/* ===== TEXTO ===== */
+p {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* ===== BOTONES ===== */
+.btn-primary {
+    background-color: #245b92;
+    border: none;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background-color: #1d4a78;
+}
+
+.btn-outline-primary {
+    border: 2px solid #245b92;
+    color: #245b92;
+}
+
+.btn-outline-primary:hover {
+    background-color: #245b92;
+    color: white;
+}
+
+/* ===== TARJETAS ===== */
 .card {
     border: none;
     border-radius: 20px;
     padding: 25px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* ===== BLOQUES ===== */
-.proveedor {
-    padding: 20px;
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+}
+
+/* ===== CONTACTO ===== */
+.contacto-section {
+    background-color: #C4D8E5;
+    border-radius: 25px;
+    padding: 45px;
+}
+
+/* ===== MAPA ===== */
+iframe {
+    width: 100%;
+    height: 350px;
     border-radius: 15px;
-    background: #f9fafc;
-    transition: 0.2s ease;
+    border: 1px solid #ddd;
+    margin-top: 15px;
 }
 
-.proveedor:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+/* ===== FLEX ===== */
+.d-flex {
+    gap: 15px;
 }
 
-/* ===== FLEX PC ===== */
-.fila-proveedor {
-    display: flex;
-    align-items: center;
-    gap: 25px;
-    justify-content: flex-start;
-}
-
-/* TEXTO */
-.info-text {
-    text-align: left;
-    flex: 1;
-    font-size: 1rem;
-    line-height: 1.5;
-}
-
-/* IMAGEN */
-.pipa-img {
-    width: 180px;
+/* ===== IMÁGENES ===== */
+img {
+    max-width: 100%;
     height: auto;
-    border-radius: 12px;
-    object-fit: cover;
-    flex-shrink: 0;
+    display: block;
+}
+
+.pipa-img {
+    max-width: 90px;   /* más equilibrado */
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* ===== FOOTER ===== */
+footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 14px;
+    color: #666;
 }
 
 /* ===== RESPONSIVE ===== */
@@ -68,19 +141,51 @@ html, body {
         padding: 20px;
         margin-top: 20px;
         border-radius: 15px;
+        width: 100%;
     }
 
-    .fila-proveedor {
-        flex-direction: column;
-        text-align: center;
+    h2 {
+        font-size: 1.4rem;
     }
 
-    .info-text {
-        text-align: center;
+    p {
         font-size: 0.95rem;
     }
 
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .contacto-section {
+        padding: 25px;
+    }
+
+    iframe {
+        height: 250px;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    table {
+        font-size: 0.85rem;
+    }
+
+    /* IMÁGENES GENERALES */
+    .ods-img,
+    .cuidado-img {
+        width: 100%;
+        max-width: 500px;
+        height: auto;
+    }
+
+    /* PIPAS EN CELULAR */
     .pipa-img {
-        width: 140px;
+        max-width: 50px;
     }
 }
