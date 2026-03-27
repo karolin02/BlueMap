@@ -110,14 +110,14 @@ iframe {
 }
 
 /* ===== IMÁGENES DE PIPAS ===== */
-.pipa-img {
-    width: 140px;
+.pipa-img{
+    max-width: 120px;
+    width: 100%;
     height: auto;
-    border-radius: 12px;
-    object-fit: cover;
-    flex-shrink: 0;
-}
 
+
+
+}
 /* ===== FOOTER ===== */
 footer {
     text-align: center;
